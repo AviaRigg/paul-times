@@ -692,20 +692,22 @@ const SUDOKU = {{SUDOKU_DATA}};
   }
   // Scrub: hold the progress bar and slide left/right to jump through pages.
   const bar = document.getElementById('bar');
-  let scrub = false, lastI = -1;
-  let scrubPos = 0;
+  let scrub = false;
+  // Relative scrubbing: wherever you grab the bar, it starts from the page you are on and moves
+  // with your finger (sliding the full bar width = going through the whole issue).
+  let scrubPos = 0, scrubX0 = 0, scrubL0 = 0;
   function scrubAt(x) {
     const r = bar.getBoundingClientRect(); if (!pages.length || !r.width) return;
-    const f = Math.min(1, Math.max(0, (x - r.left) / r.width));
-    const w = reader.clientWidth; scrubPos = f * (pages.length - 1) * w;
-    reader.scrollLeft = scrubPos;            // follows the finger continuously
-    const i = Math.round(scrubPos / w);
+    const w = reader.clientWidth, max = (pages.length - 1) * w;
+    scrubPos = Math.min(max, Math.max(0, scrubL0 + (x - scrubX0) / r.width * max));
+    reader.scrollLeft = scrubPos;
   }
   bar.addEventListener('pointerdown', e => {
-    cancelAnimationFrame(glideRaf); scrub = true; lastI = -1; bar.classList.add('scrub');
+    cancelAnimationFrame(glideRaf); scrub = true; bar.classList.add('scrub');
     reader.style.scrollSnapType = 'none'; reader.style.scrollBehavior = 'auto';
+    scrubX0 = e.clientX; scrubL0 = scrubPos = reader.scrollLeft;
     try { bar.setPointerCapture(e.pointerId); } catch (_) {}
-    scrubAt(e.clientX); e.preventDefault();
+    e.preventDefault();
   });
   bar.addEventListener('pointermove', e => { if (scrub) { scrubAt(e.clientX); e.preventDefault(); } });
   const scrubEnd = () => {
