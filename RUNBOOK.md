@@ -57,7 +57,7 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
 1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1), two teasers
    (`data-goto` a section key), lead headline + dek, lead map or chart, In brief, 2 paragraphs,
    "Continued in The World", "The day in five lines", **Number of the day**, contents (`#toc`,
-   filled automatically), reading-mode switch.
+   filled automatically).
 2. **world** (`--a-world`): lead continued (3 paragraphs), pull quote, locator map of the day's
    stories, 6 to 8 briefs. Global major events first, then minor ones.
 3. **local** (`--a-local`): Annecy and Haute-Savoie lead with an illustration or chart, weather box

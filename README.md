@@ -8,4 +8,4 @@ Paul's personal daily newspaper, as an iPhone web app.
 
 On iPhone: open the site in Safari, Share, Add to Home Screen.
 
-Live site: (set after GitHub Pages is enabled)
+Live site: https://aviarigg.github.io/paul-times/
