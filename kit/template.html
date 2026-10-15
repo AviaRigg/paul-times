@@ -40,7 +40,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 #src { display: none; }
 
 /* reader */
-#app { position: fixed; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
+#app { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; display: flex; flex-direction: column; box-sizing: border-box; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
 #bar { position: relative; flex: none; height: 3px; background: var(--rule); }
 #bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: width .2s, background .2s; }
 #reader { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
@@ -181,6 +181,20 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 <script>
 const SUDOKU = {{SUDOKU_DATA}};
 (function () {
+  const app = document.getElementById('app');
+  function fit() {
+    // iOS Home Screen apps report a shrinking viewport on some launches; use the physical screen there.
+    const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    if (!standalone) { app.style.height = ''; return; }
+    const landscape = matchMedia('(orientation: landscape)').matches;
+    const full = landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height) === screen.width ? screen.height : screen.width;
+    app.style.height = Math.max(full, window.innerHeight) + 'px';
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', () => setTimeout(fit, 300));
+  addEventListener('pageshow', fit);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) fit(); });
   const reader = document.getElementById('reader');
   const barFill = document.querySelector('#bar i');
   const src = [...document.querySelectorAll('#src > section')];
