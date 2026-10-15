@@ -149,6 +149,14 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
      "Seen it / Not for me / + My list" buttons, remembers the taps and keeps his list. You cannot
      see those taps, so never repeat a title that was in a pick list in the last 30 issues
      (unlock and check the previous issues' sources). Only give an "rt" you verified. Weekly: 8 picks.
+   Posters (always try; they make it tempting):
+   - Picks: add `"wiki": "tv|Show name"` for series (TVmaze, real portrait posters) or
+     `"wiki": "en|Wikipedia_title"` for films; or `"img": "<poster URL>"` if you found one.
+   - Coming soon: a `<div class="pgrid blk">` of up to 6 `<figure class="poster" data-pwiki="en|Film_title;fr|Titre_du_film" data-t="Title"><figcaption><b>21 Oct</b>Title</figcaption></figure>`
+     per block (several specs separated by `;` are tried in order; only portrait images count, so
+     logos and title cards are skipped). Unreleased films often have no Wikipedia poster yet: then
+     find the official poster in a news article or studio page (WebFetch, ask for the og:image or
+     poster URL) and add `data-src="<url>"`. A film with nothing gets a coloured title tile.
    Photos: posters, stills and trailer frames from studio pages or news articles (route 1 or 2 in
    Photos). Weekly edition: add the week's box office top 5 (worldwide) and all trailers released.
 11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),

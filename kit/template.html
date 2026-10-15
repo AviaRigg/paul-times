@@ -208,11 +208,12 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .mylist li button { font: inherit; font-size: 12px; padding: 5px 8px; border: 1px solid var(--rule); background: transparent; color: var(--muted); border-radius: 3px; white-space: nowrap; }
 .pick .pwrap { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
 .pick .pwrap .pimg { width: 42%; flex: none; margin: 0; aspect-ratio: 2 / 3; object-fit: cover; background: var(--rule); }
+.pick .pimg[hidden] { display: none; }
 .pick .pwrap .ptxt { flex: 1; min-width: 0; }
 .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px; }
 .pgrid .poster { margin: 0; }
 .pgrid .poster .pp { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; border-radius: 2px; background: var(--card); }
-.pgrid .poster .pp.ph { display: flex; align-items: center; justify-content: center; text-align: center; padding: 6px; box-sizing: border-box; font-family: var(--display); font-size: 14px; line-height: 1.15; border: 1px solid var(--rule); }
+.pgrid .poster .pp.ph { background: var(--accent); color: #fff; border: 0; letter-spacing: .02em; display: flex; align-items: center; justify-content: center; text-align: center; padding: 6px; box-sizing: border-box; font-family: var(--display); font-size: 14px; line-height: 1.15; border: 1px solid var(--rule); }
 .pgrid .poster figcaption { border: 0; padding: 4px 0 0; font-size: 12px; line-height: 1.25; }
 .pgrid .poster figcaption b { display: block; color: var(--accent); font-family: var(--body); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .addown input { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
@@ -533,22 +534,34 @@ const SUDOKU = {{SUDOKU_DATA}};
     } catch (e) { /* keep the printed forecast */ }
   }
   // ---------- posters: Wikipedia lead image of the film or show (any licence: cover art), cached on the phone ----------
-  async function posterFor(spec) {
-    const ck = 'tpt-poster-' + spec;
+  async function posterFor(specs) {
+    // specs: "tv|Show name" (TVmaze, real series posters) or "en|Wiki_title" / "fr|Titre" (Wikipedia, portrait images
+    // only, so logos and title cards are skipped). Several specs separated by ";" are tried in order.
+    const ck = 'tpt-poster2-' + specs;
     try { const c = localStorage.getItem(ck); if (c) return c; } catch (e) {}
-    const [lang, title] = spec.split('|');
-    const r = await fetch('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&redirects=1&titles=' + encodeURIComponent(title));
-    const d = await r.json(); const p = Object.values((d.query && d.query.pages) || {})[0];
-    const src = p && p.thumbnail && p.thumbnail.source;
-    if (src) { try { localStorage.setItem(ck, src); } catch (e) {} }
-    return src || null;
+    for (const spec of specs.split(';')) {
+      const [src, q] = spec.split('|');
+      try {
+        let url = null;
+        if (src === 'tv') {
+          const r = await fetch('https://api.tvmaze.com/singlesearch/shows?q=' + encodeURIComponent(q));
+          if (r.ok) { const j = await r.json(); url = j.image && (j.image.original || j.image.medium); }
+        } else {
+          const r = await fetch('https://' + src + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&redirects=1&titles=' + encodeURIComponent(q));
+          const d = await r.json(); const p = Object.values((d.query && d.query.pages) || {})[0];
+          if (p && p.thumbnail && p.thumbnail.height >= p.thumbnail.width * 1.25) url = p.thumbnail.source;
+        }
+        if (url) { try { localStorage.setItem(ck, url); } catch (e) {} return url; }
+      } catch (e) {}
+    }
+    return null;
   }
   function loadPosters(root) {
     root.querySelectorAll('.poster[data-pwiki]:not(.done)').forEach(fig => {
       fig.classList.add('done');
       const box = document.createElement('div'); box.className = 'pp ph'; box.textContent = fig.dataset.t || '';
       fig.insertBefore(box, fig.firstChild);
-      posterFor(fig.dataset.pwiki).then(src => {
+      (fig.dataset.src ? Promise.resolve(fig.dataset.src) : posterFor(fig.dataset.pwiki)).then(src => {
         if (!src) return; const img = new Image(); img.className = 'pp'; img.alt = fig.dataset.t || ''; img.referrerPolicy = 'no-referrer';
         img.onload = () => box.replaceWith(img); img.src = src;
       }).catch(() => {});
