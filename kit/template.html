@@ -36,14 +36,14 @@
   color-scheme: dark; }
 
 html, body { height: 100%; }
-body { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
 #src { display: none; }
 
 /* reader */
-#bar { position: relative; height: 3px; background: var(--rule); }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
+#bar { position: relative; flex: none; height: 3px; background: var(--rule); }
 #bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: width .2s, background .2s; }
-#reader { height: calc(100% - 3px); display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+#reader { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
 #reader::-webkit-scrollbar { display: none; }
 .page { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; box-sizing: border-box; }
 .ph { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px max(18px, env(safe-area-inset-right, 0px)) 6px max(18px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--rule); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
@@ -169,8 +169,10 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 </style>
 
 </head><body>
+<div id="app">
 <div id="bar" aria-hidden="true"><i></i></div>
 <main id="reader" aria-label="The Paul Times, swipe left for the next page"></main>
+</div>
 
 <div id="src">
 {{SECTIONS}}
