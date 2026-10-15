@@ -52,37 +52,54 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
 
 ## Sections (in this order)
 
-Each section is a `<section data-key data-title data-accent>` in `sections.html`.
+Each section is a `<section data-key data-title data-accent>` in `sections.html`. The big number in each section opener is its position (World 2, France 3, Local 4 ... Back Page 11).
 
 1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1), two teasers
-   (`data-goto` a section key), lead headline + dek, lead map or chart, In brief, 2 paragraphs,
-   "Continued in The World", "The day in five lines", **Number of the day**, contents (`#toc`,
-   filled automatically).
-2. **world** (`--a-world`): lead continued (3 paragraphs), pull quote, locator map of the day's
-   stories, 6 to 8 briefs. Global major events first, then minor ones.
-3. **local** (`--a-local`): Annecy and Haute-Savoie lead with an illustration or chart, weather box
+   (`data-goto` a section key), lead headline + dek, a big lead visual, In brief, 2 paragraphs,
+   a "Continued in <section>" jump, "The day in five lines", **Number of the day**, contents
+   (`#toc`, filled automatically).
+   **The front lead is the single most important or exciting story for Paul today, from ANY
+   section**, not automatically world news. Examples: "GTA 6 is out today", "Hamilton on pole
+   in Austin", "Antonelli is world champion", a big French political crisis, a market crash
+   that hits his ETFs, a major Maya or rigging release, or a war when it truly dominates.
+   The front kicker names the section (for example "Breaking · Formula 1"), the "Continued in"
+   jump points to that section, and the lead visual matches the story: a track map for F1,
+   a chart for markets, a locator map for world events, a timeline or bar chart for games or
+   tech. Real press photos are not available (no network access to photo sites, and they are
+   copyrighted); draw the visual from real data with `kit/charts.py`.
+2. **world** (`--a-world`): the main world story (continued from the front if it led), pull
+   quote, locator map of the day's stories, 6 to 8 briefs. Global major events first, then minor
+   ones.
+3. **france** (`--a-france`): FRENCH POLITICS, VERY IMPORTANT TO PAUL, never skip it, at least
+   one full article plus briefs. Government and Prime Minister, the Assemblée nationale and Senate
+   (budget, votes, motions of censure), President Macron, parties and their leaders, protests and
+   strikes, court cases involving politicians, and the 2027 presidential race (include the latest
+   first-round poll as a `rank` chart, naming pollster, date and sample size, and saying it is a
+   snapshot). Strictly neutral: report what each side says, no opinions. French sources first
+   (franceinfo, Le Monde, Public Sénat, LCP, Les Echos), cross-checked.
+4. **local** (`--a-local`): Annecy and Haute-Savoie lead with an illustration or chart, weather box
    for Amsterdam and Annecy (°C, today plus 3 days, rain %), a "Scooter check" line (he rides a
    scooter in Amsterdam), 3 to 4 Annecy briefs, **Dutch word of the day** (word, pronunciation,
    example sentence, bonus phrase; useful for a delivery driver).
-4. **markets** (`--a-markets`): lead on the main market story, index-moves bar chart, "Other
+5. **markets** (`--a-markets`): lead on the main market story, index-moves bar chart, "Other
    markets" table (AEX, CAC 40, EUR/USD, gold, Brent, US 10-year), then "Your portfolio":
    ETF weight-vs-target chart, Revolut table, eToro table, Straight talk.
-5. **crypto** (`--a-crypto`): bitcoin lead with a dated line chart, price table (BTC, ETH, SOL,
+6. **crypto** (`--a-crypto`): bitcoin lead with a dated line chart, price table (BTC, ETH, SOL,
    XRP, USDT, USDC), briefs on stablecoins, CBDCs (digital euro etc.), US and EU regulation,
    governments and bitcoin. Sudoku No. 1 (`<div class="sdk blk" data-sudoku="0"></div>`).
-6. **tech** (`--a-tech`): AI lead, one chart, pull quote, tech and AI briefs, **Quote of the day**
+7. **tech** (`--a-tech`): AI lead, one chart, pull quote, tech and AI briefs, **Quote of the day**
    (real, correctly attributed, ideally public domain; tie it to rigging or craft in one line).
-7. **craft** (`--a-craft`): 3D animation, rigging (top priority), 3D software (Maya, Blender,
+8. **craft** (`--a-craft`): 3D animation, rigging (top priority), 3D software (Maya, Blender,
    Houdini, ZBrush, Unreal), video games. **Tool of the week** (inverted box), **Rigging job board**
    (real openings with studio and location; say so if there are none), **Australia corner**
    (visas, VFX and animation hiring in Australia).
-8. **sport** (`--a-sport`): F1 (results, standings, technical news; add a "Tech desk · for the SF-26
+9. **sport** (`--a-sport`): F1 (results, standings, technical news; add a "Tech desk · for the SF-26
    project" box, he is rigging an F1 car), tennis (big results and French players), Les Bleus
    (men's national team; results strip), **On this day** (3 dated historical events for today).
-9. **week** (`--a-week`): timeline list of the next 10 days (`ol.tl`, mark the biggest item `hot`),
+10. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
    editorial (one opinion piece on the top story, ending with the opposing view), Sudoku No. 2
    (`data-sudoku="1"`). Weekly: put Sudoku 3 and 4 here too.
-10. **back** (`--a-back`): **Rigging tip of the day** (Maya 2026, practical, with a short
+11. **back** (`--a-back`): **Rigging tip of the day** (Maya 2026, practical, with a short
     `maya.cmds` snippet that actually works), sources by section, "Past issues" link, footer note.
 
 ## Writing rules

@@ -340,5 +340,42 @@
   "file": "cota.png",
   "circuit": "us-2012",
   "start_label": "Start / finish\nuphill run to Turn 1"
+ },
+ {
+  "type": "rank",
+  "file": "polls.png",
+  "accent": "#33409a",
+  "fmt": "{:.0f}%",
+  "highlight": "Le Pen",
+  "items": [
+   [
+    "Le Pen",
+    36.0
+   ],
+   [
+    "M\u00e9lenchon",
+    18.2
+   ],
+   [
+    "Philippe",
+    15.7
+   ],
+   [
+    "Glucksmann",
+    10.3
+   ],
+   [
+    "Attal",
+    9.7
+   ],
+   [
+    "Retailleau",
+    8.4
+   ],
+   [
+    "Zemmour",
+    4.6
+   ]
+  ]
  }
 ]
