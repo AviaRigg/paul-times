@@ -693,11 +693,12 @@ const SUDOKU = {{SUDOKU_DATA}};
   let scrub = false;
   // Relative scrubbing: wherever you grab the bar, it starts from the page you are on and moves
   // with your finger (sliding the full bar width = going through the whole issue).
+  const SCRUB_GAIN = 1.6;   // pages move 1.6x faster than the finger: about 60% of the bar covers the whole issue
   let scrubPos = 0, scrubX0 = 0, scrubL0 = 0;
   function scrubAt(x) {
     const r = bar.getBoundingClientRect(); if (!pages.length || !r.width) return;
     const w = reader.clientWidth, max = (pages.length - 1) * w;
-    scrubPos = Math.min(max, Math.max(0, scrubL0 + (x - scrubX0) / r.width * max));
+    scrubPos = Math.min(max, Math.max(0, scrubL0 + (x - scrubX0) / r.width * max * SCRUB_GAIN));
     reader.scrollLeft = scrubPos;
   }
   bar.addEventListener('pointerdown', e => {
