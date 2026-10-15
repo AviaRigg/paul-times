@@ -227,6 +227,21 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .mylist .flash { background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; padding: 6px 10px; border-radius: 3px; margin: 0 0 6px; }
 .btns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
 .btns2 button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 9px 4px; border: 1.5px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
+.checked h4, .feedback h4 { font-size: 19px; border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 6px; }
+.checked { border: 1px solid var(--ink); background: var(--card); padding: 12px 14px; }
+.checked ul { list-style: none; padding: 0; margin: 0; }
+.checked li { display: flex; gap: 10px; border-bottom: 1px solid var(--rule); padding: 8px 0; }
+.checked li:last-child { border-bottom: 0; }
+.checked li p { margin: 0 0 4px; font-size: 15px; }
+.checked .vd { flex: none; width: 74px; font-size: 12px; font-weight: 700; letter-spacing: .04em; padding-top: 2px; }
+.checked .vd.right { color: var(--up); } .checked .vd.wrong { color: var(--down); } .checked .vd.partly { color: var(--a-crypto); } .checked .vd.pending { color: var(--muted); }
+.checked .flagb { font: inherit; font-size: 12.5px; background: none; border: 0; padding: 2px 0; color: var(--muted); text-decoration: underline; }
+.checked .flagbox[hidden] { display: none; }
+.checked .flagbox { display: flex; gap: 6px; margin-top: 4px; }
+.checked .flagbox input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 6px 8px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
+.checked .flagbox button, .feedback .fbsend { font: inherit; font-size: 14px; font-weight: 700; padding: 7px 12px; border: 0; background: var(--ink); color: var(--bg); border-radius: 3px; }
+.checked .flagged { color: var(--accent); }
+.feedback textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; margin: 6px 0; }
 .rt { font-weight: 700; white-space: nowrap; }
 .rt.fresh { color: var(--down); } .rt.rotten { color: var(--up); }
 figure.photo { display: none; }
@@ -595,9 +610,37 @@ const SUDOKU = {{SUDOKU_DATA}};
     const d = sGet(); const k = sKey(p);
     const ev = { a, t: Date.now(), title: p.t, y: p.y || '', kind: p.kind || '', where: p.where || '', link: p.link || '' };
     d.v[k] = ev; sPut(d);
+    sendEvent(ev); refreshScreen();
+  }
+  function sendEvent(ev) {
     let ob = []; try { ob = JSON.parse(raw.get(OUT)) || []; } catch (e) {}
-    ob.push(ev); raw.set(OUT, JSON.stringify(ob));
-    refreshScreen(); flushOutbox();
+    ob.push(ev); raw.set(OUT, JSON.stringify(ob)); flushOutbox();
+  }
+  // ---------- Yesterday, checked + "Not right?" flags + free feedback (sent through the same encrypted form) ----------
+  const FK = 'tpt-flags';
+  function flagsGet() { try { return JSON.parse(raw.get(FK)) || {}; } catch (e) { return {}; } }
+  function renderChecked(el) {
+    let items = []; try { items = JSON.parse(el.dataset.checked); } catch (e) {}
+    const flags = flagsGet();
+    const lab = { right: '✓ Right', wrong: '✗ Wrong', partly: '≈ Partly', pending: '… Not yet' };
+    el.innerHTML = '<h4>Yesterday, checked</h4>' + (items.length ? '<ul>' + items.map((c, i) => `<li><span class="vd ${esc(c.verdict)}">${lab[c.verdict] || esc(c.verdict)}</span><div><p>${esc(c.text)}</p>${c.note ? `<p class="small">${esc(c.note)}</p>` : ''}
+      ${flags[c.id] ? '<p class="small flagged">⚑ Flagged, will be rechecked tomorrow.</p>' : `<button class="flagb" data-i="${i}">Not right?</button><div class="flagbox" hidden><input type="text" placeholder="What's wrong? (optional)" aria-label="What is wrong"><button class="flagsend" data-i="${i}">Send</button></div>`}</div></li>`).join('') + '</ul>' : '<p class="small">Nothing to check today.</p>');
+    el.querySelectorAll('.flagb').forEach(b => b.onclick = () => { b.hidden = true; b.nextElementSibling.hidden = false; b.nextElementSibling.querySelector('input').focus(); });
+    el.querySelectorAll('.flagsend').forEach(b => b.onclick = () => {
+      const c = items[+b.dataset.i]; const note = b.previousElementSibling.value.trim();
+      sendEvent({ a: 'flag', t: Date.now(), title: c.id, claim: c.text, verdict: c.verdict, note, issue: '{{ISSUE_ID}}' });
+      const f = flagsGet(); f[c.id] = Date.now(); raw.set(FK, JSON.stringify(f)); renderChecked(el);
+    });
+  }
+  function renderFeedback(el) {
+    el.innerHTML = `<h4>Something wrong or missing?</h4><p class="small">Tell the paper. It is checked and answered in a Corrections box.</p>
+      <textarea rows="3" placeholder="e.g. The Lycée figure is wrong, or: more on Valorant please" aria-label="Feedback"></textarea>
+      <button class="fbsend">Send</button><p class="small fbok" hidden>✓ Sent. Look for it in tomorrow's Corrections.</p>`;
+    el.querySelector('.fbsend').onclick = () => {
+      const ta = el.querySelector('textarea'); const note = ta.value.trim(); if (!note) { ta.focus(); return; }
+      sendEvent({ a: 'note', t: Date.now(), title: 'note', note, issue: '{{ISSUE_ID}}' });
+      ta.value = ''; el.querySelector('.fbok').hidden = false;
+    };
   }
   function refreshScreen() { document.querySelectorAll('[data-pick]').forEach(renderPick); document.querySelectorAll('[data-mylist]').forEach(renderList); }
   function renderPick(el) {
@@ -671,6 +714,8 @@ const SUDOKU = {{SUDOKU_DATA}};
     if (!loadScreen.done) { loadScreen.done = true; mergeServerState(); flushOutbox(); }
     root.querySelectorAll('[data-pick]').forEach(renderPick);
     root.querySelectorAll('[data-mylist]').forEach(renderList);
+    root.querySelectorAll('[data-checked]').forEach(renderChecked);
+    root.querySelectorAll('[data-feedback]').forEach(renderFeedback);
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
   let glideRaf = 0;

@@ -1,6 +1,7 @@
 """Turn Paul's encrypted taps (Google Sheet rows from his "Paul Times taps" form) into the state the paper uses.
 
 Usage:  TPT_PASSWORD=xxxx python kit/screen_state.py rows.json <issue id>
+Also prints Paul's unanswered flags and feedback notes (see RUNBOOK, Corrections).
 rows.json: the Sheet's values as a JSON list of rows (what the Google Sheets connector returns), any shape;
 every cell that starts with "tpt1." is decrypted, anything else (headers, junk, other people's spam) is ignored.
 Writes issues/<id>/screen-state.json (gitignored; the build puts it inside the encrypted issue so his phone
@@ -28,7 +29,7 @@ def cells(x):
         for v in x:
             yield from cells(v)
 
-state, bad = {}, 0
+state, bad, feedback = {}, 0, []
 for c in cells(json.load(open(rows_path))):
     c = c.strip()
     if not c.startswith("tpt1."):
@@ -36,6 +37,9 @@ for c in cells(json.load(open(rows_path))):
     try:
         _, iv, ct = c.split(".")
         ev = json.loads(aes.decrypt(base64.b64decode(iv), base64.b64decode(ct), None))
+        if ev.get("a") in ("flag", "note"):
+            feedback.append(ev)
+            continue
         k = (ev["title"] + "|" + (ev.get("y") or "")).lower()
         if k not in state or ev.get("t", 0) >= state[k].get("t", 0):
             state[k] = {f: str(ev.get(f, ""))[:120] if f != "t" else int(ev.get("t", 0)) for f in ("a", "t", "title", "y", "kind", "where", "link")}
@@ -53,3 +57,14 @@ later = sorted((v["title"], (time.time() * 1000 - v["t"]) / 86400000) for v in s
 print("NOT SURE (do not suggest again within 30 days; after that it may come back once, with a better reason):",
       "; ".join(f"{t} ({d:.0f} days ago)" for t, d in later) or "none")
 print(f"{len(state)} titles, {bad} rows ignored (not decryptable)")
+
+handled_p = os.path.join(ROOT, "kit", "feedback-handled.json")
+handled = set(json.load(open(handled_p))) if os.path.exists(handled_p) else set()
+todo = [f for f in sorted(feedback, key=lambda f: f.get("t", 0)) if f.get("t") not in handled]
+print()
+print("PAUL'S FEEDBACK TO ANSWER (Corrections box; then add each t to kit/feedback-handled.json):" if todo else "PAUL'S FEEDBACK: nothing new")
+for f in todo:
+    if f["a"] == "flag":
+        print(f"- t={f['t']} FLAGGED claim {f.get('title')} from issue {f.get('issue')} (we said: {f.get('verdict')}): {f.get('claim')!r}; his note: {f.get('note') or '(none)'}")
+    else:
+        print(f"- t={f['t']} NOTE from issue {f.get('issue')}: {f.get('note')!r}")
