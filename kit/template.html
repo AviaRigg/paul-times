@@ -635,6 +635,10 @@ const SUDOKU = {{SUDOKU_DATA}};
     let srv = null; try { srv = JSON.parse(tag.textContent); } catch (e) {}
     if (!srv || !srv.v) return;
     const d = sGet(); let changed = false;
+    if (srv.reset && srv.reset > (d.reset || 0)) {
+      for (const k in d.v) if ((d.v[k].t || 0) < srv.reset) delete d.v[k];
+      d.reset = srv.reset; raw.set(OUT, '[]'); changed = true;
+    }
     for (const k in srv.v) if (!d.v[k] || (srv.v[k].t || 0) > (d.v[k].t || 0)) { d.v[k] = srv.v[k]; changed = true; }
     if (changed) sPut(d);
   }
