@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -36,6 +36,8 @@
   color-scheme: dark; }
 
 html, body { height: 100%; }
+html, body, button, input, a, #reader, #bar, #pf { touch-action: manipulation; }
+.grid input { font-size: max(16px, 1em); }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
 #src { display: none; }
 
@@ -273,6 +275,10 @@ const SUDOKU = {{SUDOKU_DATA}};
   addEventListener('orientationchange', () => setTimeout(fit, 300));
   addEventListener('pageshow', fit);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) fit(); });
+  // iOS ignores user-scalable=no for pinch; block pinch and double-tap zoom gestures explicitly.
+  ['gesturestart', 'gesturechange'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouchEnd < 300 && !e.target.closest('input, button, a')) e.preventDefault(); lastTouchEnd = now; }, { passive: false });
   // iOS scrolls the whole page up to show the keyboard and does not always scroll it back; the drawing
   // then sits above the tap targets. Snap the page back whenever no text field is being edited.
   const resetScroll = () => { if (!typing() && (window.scrollY || window.scrollX || document.documentElement.scrollTop)) { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } };
