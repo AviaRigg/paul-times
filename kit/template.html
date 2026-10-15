@@ -258,6 +258,8 @@ const SUDOKU = {{SUDOKU_DATA}};
     const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
     const vis = Math.round(Math.max(window.innerHeight, window.visualViewport ? visualViewport.height : 0));
     app.style.height = (vis < full * 0.85 ? full : vis) + 'px';
+    // WebKit bug 301994: the web layer stops short of the screen bottom, so the home-indicator padding is already outside it.
+    app.style.paddingBottom = vis < full - 20 ? '0px' : '';
     if (window.scrollY && !typing()) window.scrollTo(0, 0);
   }
   fit();
