@@ -36,7 +36,6 @@
   color-scheme: dark; }
 
 html, body { height: 100%; }
-html { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
 #src { display: none; }
 
@@ -249,13 +248,17 @@ figure.photo.ready { display: block; }
 const SUDOKU = {{SUDOKU_DATA}};
 (function () {
   const app = document.getElementById('app');
+  function typing() { const e = document.activeElement; return !!e && (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA'); }
   function fit() {
-    // iOS Home Screen apps report a shrinking viewport on some launches; use the physical screen there.
+    // Size the app to what is actually visible. iOS Home Screen apps sometimes report a viewport far
+    // too short at launch (the old bottom gap); only then fall back to the physical screen height.
     const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
     if (!standalone) { app.style.height = ''; return; }
     const landscape = matchMedia('(orientation: landscape)').matches;
-    const full = landscape ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height) === screen.width ? screen.height : screen.width;
-    app.style.height = Math.max(full, window.innerHeight) + 'px';
+    const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+    const vis = Math.round(Math.max(window.innerHeight, window.visualViewport ? visualViewport.height : 0));
+    app.style.height = (vis < full * 0.85 ? full : vis) + 'px';
+    if (window.scrollY && !typing()) window.scrollTo(0, 0);
   }
   fit();
   addEventListener('resize', fit);
@@ -264,12 +267,10 @@ const SUDOKU = {{SUDOKU_DATA}};
   document.addEventListener('visibilitychange', () => { if (!document.hidden) fit(); });
   // iOS scrolls the whole page up to show the keyboard and does not always scroll it back; the drawing
   // then sits above the tap targets. Snap the page back whenever no text field is being edited.
-  const typing = () => { const e = document.activeElement; return e && (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA'); };
   const resetScroll = () => { if (!typing() && (window.scrollY || window.scrollX || document.documentElement.scrollTop)) { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } };
-  addEventListener('scroll', resetScroll, { passive: true });
   document.addEventListener('focusout', () => { setTimeout(resetScroll, 60); setTimeout(resetScroll, 400); });
-  if (window.visualViewport) { visualViewport.addEventListener('resize', () => setTimeout(resetScroll, 60)); visualViewport.addEventListener('scroll', () => setTimeout(resetScroll, 60)); }
-  document.addEventListener('touchstart', resetScroll, { passive: true });
+  if (window.visualViewport) { visualViewport.addEventListener('resize', () => setTimeout(() => { if (!typing()) fit(); resetScroll(); }, 60)); visualViewport.addEventListener('scroll', () => setTimeout(resetScroll, 60)); }
+
   const reader = document.getElementById('reader');
   const barFill = document.querySelector('#bar i');
   const src = [...document.querySelectorAll('#src > section')];
@@ -359,6 +360,7 @@ const SUDOKU = {{SUDOKU_DATA}};
       const title = src.find(s => s.dataset.key === k).dataset.title;
       p.querySelector('.where').textContent = counts[k] > 1 ? title + ' ' + seen[k] + '/' + counts[k] : title;
       p.querySelector('.num').textContent = (idx + 1) + ' / ' + pages.length;
+      p.querySelector('.num').onclick = e => { const n = e.currentTarget; n._c = (n._c || 0) + 1; clearTimeout(n._t); n._t = setTimeout(() => { n._c = 0; }, 700); if (n._c < 3) return; n._c = 0; n.textContent = 'ih ' + innerHeight + ' vv ' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + ' sc ' + screen.height + ' app ' + app.offsetHeight + ' y ' + Math.round(scrollY); };
       p.querySelector('.prev').disabled = idx === 0;
       p.querySelector('.next').disabled = idx === pages.length - 1;
     });
