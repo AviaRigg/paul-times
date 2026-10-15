@@ -54,6 +54,11 @@ def inline(m):
 
 sections = re.sub(r'src="([^"/:]+\.png)"(?:\s+width="\d+"\s+height="\d+")?', inline, sections)
 tpl = open(os.path.join(KIT, "template.html"), encoding="utf-8").read()
+form = json.load(open(os.path.join(KIT, "form.json"))) if os.path.exists(os.path.join(KIT, "form.json")) else {}
+state_p = os.path.join(folder, "screen-state.json")
+state = open(state_p, encoding="utf-8").read().replace("</", "<\\/") if os.path.exists(state_p) else "{}"
+tpl = (tpl.replace("{{FORM_ACTION}}", form.get("action", "")).replace("{{FORM_ENTRY}}", form.get("entry", ""))
+       .replace("{{SCREEN_STATE}}", state))
 html = (tpl.replace("{{SECTIONS}}", sections).replace("{{SUDOKU_DATA}}", json.dumps(puzzles))
         .replace("{{ISSUE_ID}}", a.id).replace("{{ISSUE_LABEL}}", label))
 if "—" in html:

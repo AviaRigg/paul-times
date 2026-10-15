@@ -215,6 +215,9 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .pgrid .poster .pp.ph { display: flex; align-items: center; justify-content: center; text-align: center; padding: 6px; box-sizing: border-box; font-family: var(--display); font-size: 14px; line-height: 1.15; border: 1px solid var(--rule); }
 .pgrid .poster figcaption { border: 0; padding: 4px 0 0; font-size: 12px; line-height: 1.25; }
 .pgrid .poster figcaption b { display: block; color: var(--accent); font-family: var(--body); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.addown input { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
+.btns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.btns2 button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 9px 4px; border: 1.5px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
 .rt { font-weight: 700; white-space: nowrap; }
 .rt.fresh { color: var(--down); } .rt.rotten { color: var(--up); }
 figure.photo { display: none; }
@@ -238,6 +241,7 @@ figure.photo.ready { display: block; }
 {{SECTIONS}}
 </div>
 
+<script type="application/json" id="screen-state">{{SCREEN_STATE}}</script>
 <script>
 const SUDOKU = {{SUDOKU_DATA}};
 (function () {
@@ -535,12 +539,31 @@ const SUDOKU = {{SUDOKU_DATA}};
       }).catch(() => {});
     });
   }
-  // ---------- screen: tonight's pick (verdicts kept on this phone) ----------
-  const SK = 'tpt-screen';
-  function sGet() { try { return JSON.parse(localStorage.getItem(SK)) || { v: {}, list: [] }; } catch (e) { return { v: {}, list: [] }; } }
-  function sPut(d) { try { localStorage.setItem(SK, JSON.stringify(d)); } catch (e) {} }
+  // ---------- screen: tonight's pick + my list ----------
+  // Taps are kept on the phone and also sent, encrypted with the issue key, to Paul's Google Form,
+  // so the morning run can follow what he watches. The run sends back its merged view in #screen-state.
+  const SK = 'tpt-screen', OUT = 'tpt-screen-outbox';
+  const FORM = { action: '{{FORM_ACTION}}', entry: '{{FORM_ENTRY}}' };
+  const raw = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   const sKey = p => (p.t + '|' + (p.y || '')).toLowerCase();
   const esc = x => String(x == null ? '' : x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function sGet() {
+    let d = null; try { d = JSON.parse(raw.get(SK)); } catch (e) {}
+    d = d || { v: {} };
+    for (const k in d.v) if (typeof d.v[k] === 'string') d.v[k] = { a: d.v[k], t: 0, title: k.split('|')[0], y: k.split('|')[1] || '' };
+    (d.list || []).forEach(x => { const k = sKey(x); d.v[k] = Object.assign({ t: 0 }, d.v[k] || {}, { a: 'list', title: x.t, y: x.y || '', kind: x.kind, where: x.where, link: x.link }); });
+    delete d.list; return d;
+  }
+  function sPut(d) { raw.set(SK, JSON.stringify(d)); }
+  function setVerdict(p, a) {
+    const d = sGet(); const k = sKey(p);
+    const ev = { a, t: Date.now(), title: p.t, y: p.y || '', kind: p.kind || '', where: p.where || '', link: p.link || '' };
+    d.v[k] = ev; sPut(d);
+    let ob = []; try { ob = JSON.parse(raw.get(OUT)) || []; } catch (e) {}
+    ob.push(ev); raw.set(OUT, JSON.stringify(ob));
+    refreshScreen(); flushOutbox();
+  }
+  function refreshScreen() { document.querySelectorAll('[data-pick]').forEach(renderPick); document.querySelectorAll('[data-mylist]').forEach(renderList); }
   function renderPick(el) {
     let picks = []; try { picks = JSON.parse(el.dataset.pick); } catch (e) {}
     const d = sGet(); const todo = picks.filter(p => !d.v[sKey(p)]);
@@ -552,22 +575,55 @@ const SUDOKU = {{SUDOKU_DATA}};
       <div class="btns"><button data-a="seen">✓ Seen it</button><button data-a="no">✗ Not for me</button><button data-a="list" class="add">+ My list</button></div>
       <div class="left">${todo.length - 1 ? (todo.length - 1) + ' more pick' + (todo.length > 2 ? 's' : '') + ' after this' : 'Last pick today'}</div>`;
     const pim = el.querySelector('.pimg');
-    (p.img ? Promise.resolve(p.img) : p.wiki ? posterFor(p.wiki) : Promise.resolve(null)).then(src => { if (src) { pim.onload = () => { pim.hidden = false; }; pim.src = src; } }).catch(() => {});
-    el.querySelectorAll('button').forEach(b => b.onclick = () => {
-      const d2 = sGet(); d2.v[sKey(p)] = b.dataset.a;
-      if (b.dataset.a === 'list' && !d2.list.some(x => sKey(x) === sKey(p))) d2.list.push({ t: p.t, y: p.y, kind: p.kind, where: p.where, link: p.link, added: el.dataset.issue || '' });
-      sPut(d2); renderPick(el); document.querySelectorAll('[data-mylist]').forEach(renderList);
-    });
+    (p.img ? Promise.resolve(p.img) : p.wiki ? posterFor(p.wiki) : Promise.resolve(null)).then(s => { if (s) { pim.onload = () => { pim.hidden = false; }; pim.src = s; } }).catch(() => {});
+    el.querySelectorAll('button').forEach(b => b.onclick = () => setVerdict(p, b.dataset.a));
   }
   function renderList(el) {
-    const d = sGet();
-    el.innerHTML = `<h4>My list (${d.list.length})</h4>` + (d.list.length ? '<ul>' + d.list.map((x, i) => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.t)}</a>` : esc(x.t)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-i="${i}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>');
-    el.querySelectorAll('button[data-i]').forEach(b => b.onclick = () => {
-      const d2 = sGet(); const x = d2.list.splice(+b.dataset.i, 1)[0]; if (x) d2.v[sKey(x)] = 'seen'; sPut(d2); renderList(el);
-    });
+    const d = sGet(); const items = Object.values(d.v).filter(x => x.a === 'list').sort((a, b) => (a.t || 0) - (b.t || 0));
+    let pending = 0; try { pending = (JSON.parse(raw.get(OUT)) || []).length; } catch (e) {}
+    el.innerHTML = `<h4>My list (${items.length})</h4>` + (items.length ? '<ul>' + items.map(x => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.title)}</a>` : esc(x.title)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-k="${esc(sKey({ t: x.title, y: x.y }))}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>')
+      + `<div class="addown"><p class="small" style="margin:10px 0 4px"><b>Watching something else?</b> Add it and the paper will follow it.</p>
+         <input type="text" placeholder="Show or film title" aria-label="Show or film title">
+         <div class="btns2"><button data-own="seen">I watch it</button><button data-own="list">+ My list</button></div></div>
+         <p class="note" style="margin-top:8px">${FORM.action.startsWith('http') ? (pending ? pending + ' tap' + (pending > 1 ? 's' : '') + ' waiting to send' : 'All taps sent. The morning paper follows them.') : 'Saved on this phone only for now.'}</p>`;
+    el.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { const x = sGet().v[b.dataset.k]; if (x) setVerdict({ t: x.title, y: x.y, kind: x.kind, where: x.where, link: x.link }, 'seen'); });
+    const inp = el.querySelector('.addown input');
+    el.querySelectorAll('button[data-own]').forEach(b => b.onclick = () => { const t = inp.value.trim(); if (t) { setVerdict({ t, y: '', kind: 'added by you' }, b.dataset.own); } });
+  }
+  async function issueKey() {
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('tpt-key-')) {
+      const kb = Uint8Array.from(atob(localStorage.getItem(k)), c => c.charCodeAt(0));
+      return crypto.subtle.importKey('raw', kb, { name: 'AES-GCM' }, false, ['encrypt']); } }
+    return null;
+  }
+  const b64e = u8 => { let s = ''; u8.forEach(c => s += String.fromCharCode(c)); return btoa(s); };
+  let flushing = false;
+  async function flushOutbox() {
+    if (flushing || !FORM.action.startsWith('http')) return; flushing = true;
+    try {
+      const key = await issueKey(); if (!key) return;
+      let ob = []; try { ob = JSON.parse(raw.get(OUT)) || []; } catch (e) {}
+      while (ob.length) {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(ob[0]))));
+        const body = new URLSearchParams(); body.set(FORM.entry, 'tpt1.' + b64e(iv) + '.' + b64e(ct));
+        await fetch(FORM.action, { method: 'POST', mode: 'no-cors', body });
+        ob.shift(); raw.set(OUT, JSON.stringify(ob));
+      }
+    } catch (e) { /* offline: retried next time */ }
+    finally { flushing = false; document.querySelectorAll('[data-mylist]').forEach(renderList); }
+  }
+  function mergeServerState() {
+    const tag = document.getElementById('screen-state'); if (!tag) return;
+    let srv = null; try { srv = JSON.parse(tag.textContent); } catch (e) {}
+    if (!srv || !srv.v) return;
+    const d = sGet(); let changed = false;
+    for (const k in srv.v) if (!d.v[k] || (srv.v[k].t || 0) > (d.v[k].t || 0)) { d.v[k] = srv.v[k]; changed = true; }
+    if (changed) sPut(d);
   }
   function loadScreen(root) {
-    root.querySelectorAll('[data-pick]').forEach(el => { el.dataset.issue = '{{ISSUE_ID}}'; renderPick(el); });
+    if (!loadScreen.done) { loadScreen.done = true; mergeServerState(); flushOutbox(); }
+    root.querySelectorAll('[data-pick]').forEach(renderPick);
     root.querySelectorAll('[data-mylist]').forEach(renderList);
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }

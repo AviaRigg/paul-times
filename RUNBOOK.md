@@ -41,6 +41,15 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    both cities. NEVER copy weather from a previous issue; if nothing can be read, the fallback
    is just "Live forecast loads when you open the issue." Do not write a separate
    "Scooter check" paragraph; the live box covers it.
+4b. Screen taps (what Paul watched, saved or rejected): read the whole first sheet of the Google
+   Sheet "Paul Times taps (Responses)" (id in `kit/form.json` as `sheet`, range `A:B`) with the
+   Google Sheets connector, save the result as JSON to `/tmp/taps.json`, then run
+   `TPT_PASSWORD=<code> python kit/screen_state.py /tmp/taps.json <id>`. It decrypts his taps,
+   writes `issues/<id>/screen-state.json` (the build puts it in the issue so his phone stays in
+   sync) and prints three lists. Use them in the Screen section: every SEEN series joins "Your
+   shows" coverage; say when a MY LIST title arrives on a Dutch streamer or in cinemas; never
+   suggest any listed title again; steer picks away from NOT FOR ME. Rows that do not decrypt are
+   junk: ignore them. If the Sheet cannot be read, skip this step and say so in the final report.
 5. Create `issues/<id>/` and write:
    - `sections.html` (structure below). First unlock the previous issue's source with
      `TPT_PASSWORD=<code> python kit/unlock.py <previous id>`, then copy it as the starting pattern,

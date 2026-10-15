@@ -1,3 +1,4 @@
 build/
 __pycache__/
 issues/*/sections.html
+issues/*/screen-state.json
