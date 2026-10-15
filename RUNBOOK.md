@@ -161,6 +161,11 @@ Markup:
   screenshots with transparent backgrounds.
 The credit and an "open source" link are added automatically.
 
+Check before publishing: for every `data-src` URL run
+`curl -s -o /dev/null -m 15 -w '%{http_code}' "<url>"`. 200 means keep it. A 403, 404 or 410 from
+the site itself means find another image. `000` (blocked by this session's network) means you
+cannot check, so keep it. Report how many images you checked and how many you dropped.
+
 Volume: daily 12 to 20 images, weekly 25 or more. Front lead always has one. Every section
 lead has one. Never use a photo of a different event as if it showed today's news; say
 "File photo" in the caption when the image is not of the event itself.
