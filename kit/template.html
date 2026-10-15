@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paul Times">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>The Paul Times · {{ISSUE_LABEL}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap">
+<style>
+/* Layout: one phone screen per page, pages side by side, swipe left/right (scroll-snap). Broadsheet type, one accent per section. */
+:root {
+  --bg: #f4f1ea; --ink: #16130f; --muted: #5f584d; --rule: #c9c1b2; --card: #ebe6db; --plate: #f7f3ea;
+  --up: #1d6b2f; --down: #a3201d;
+  --a-front: #8a1c1c; --a-world: #8a1c1c; --a-local: #2e6b66; --a-markets: #1f4e79; --a-crypto: #a55a15;
+  --a-tech: #5a3f8a; --a-craft: #a8441a; --a-sport: #23703a; --a-week: #7a5c00; --a-back: #4f4a42;
+  --display: "Playfair Display", "Iowan Old Style", Georgia, serif;
+  --body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --accent: var(--a-front);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --card: #23201b; --plate: #efe9dc;
+  --up: #6cc485; --down: #ee7d76;
+  --a-front: #e3817c; --a-world: #e3817c; --a-local: #72bdb4; --a-markets: #82acd9; --a-crypto: #e2a464;
+  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-week: #d8b552; --a-back: #b9b1a3;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --card: #23201b; --plate: #efe9dc;
+  --up: #6cc485; --down: #ee7d76;
+  --a-front: #e3817c; --a-world: #e3817c; --a-local: #72bdb4; --a-markets: #82acd9; --a-crypto: #e2a464;
+  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-week: #d8b552; --a-back: #b9b1a3;
+  color-scheme: dark; }
+
+html, body { height: 100%; }
+body { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
+#src { display: none; }
+
+/* reader */
+#bar { position: relative; height: 3px; background: var(--rule); }
+#bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: width .2s, background .2s; }
+#reader { height: calc(100% - 3px); display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+#reader::-webkit-scrollbar { display: none; }
+.page { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; box-sizing: border-box; }
+.ph { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px max(18px, env(safe-area-inset-right, 0px)) 6px max(18px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--rule); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.ph .mast-s { font-family: var(--display); font-weight: 700; letter-spacing: .04em; text-transform: none; font-size: 14px; }
+.ph .where { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.pb { flex: 1; min-height: 0; overflow: hidden; padding: 14px max(18px, env(safe-area-inset-right, 0px)) 8px max(18px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
+.pb.overflow, .mode-scroll .pb { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.pf { display: flex; justify-content: space-between; align-items: center; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
+.pf button { font: inherit; color: var(--accent); background: none; border: 0; padding: 6px 4px; cursor: pointer; font-weight: 700; letter-spacing: .06em; }
+.pf button:disabled { color: var(--rule); }
+.pf .num { font-family: var(--display); font-size: 14px; color: var(--ink); }
+.pb > * { flex-shrink: 0; }
+
+/* typography */
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.12; }
+p { margin: 0; text-wrap: pretty; hyphens: auto; }
+.blk > p + p { margin-top: 10px; }
+.kicker { font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.opener { border-bottom: 3px solid var(--ink); padding-bottom: 6px; display: flex; align-items: flex-end; gap: 10px; }
+.opener .n { font-family: var(--display); font-size: 44px; line-height: .8; color: var(--accent); }
+.opener h2 { font-size: 34px; letter-spacing: -.01em; }
+.opener + .tagline { margin-top: -4px; }
+.tagline { font-style: italic; color: var(--muted); font-size: 15px; border-bottom: 1px solid var(--ink); padding-bottom: 8px; }
+.head h3 { font-size: 25px; letter-spacing: -.01em; }
+.brief h4 { font-size: 19px; margin-bottom: 4px; }
+.brief { border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.inbrief { background: var(--card); border-top: 2px solid var(--ink); padding: 8px 12px; font-size: 16px; }
+.inbrief b.l { display: block; color: var(--accent); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+.drop::first-letter { font-family: var(--display); font-weight: 700; float: left; font-size: 56px; line-height: .82; padding: 6px 7px 0 0; color: var(--accent); }
+.jump { text-align: right; color: var(--accent); font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.small { font-size: 14.5px; color: var(--muted); }
+.note { font-size: 13px; font-style: italic; color: var(--muted); }
+figure { margin: 0; }
+.plate { background: var(--plate); border-radius: 2px; padding: 6px; }
+.plate img { display: block; width: 100%; height: auto; }
+figcaption { font-size: 13.5px; line-height: 1.4; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 6px 0 8px; }
+figcaption b { font-family: var(--display); color: var(--ink); }
+figcaption .cr { font-style: italic; }
+.pull { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 12px 4px; text-align: center; }
+.pull p { font-style: italic; font-size: 22px; line-height: 1.3; }
+.pull .q { font-family: var(--display); color: var(--accent); font-size: 40px; line-height: .6; display: block; height: 18px; }
+.pull .who { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+.box { border: 1px solid var(--ink); background: var(--card); padding: 12px 14px; }
+.box h4 { font-size: 19px; border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 8px; }
+.box.inv { background: var(--ink); color: var(--bg); }
+.box.inv h4 { border-color: var(--bg); }
+.fun { border: 1px solid var(--accent); border-top: 6px solid var(--accent); background: var(--card); padding: 10px 14px 12px; }
+.fun .lbl { display: block; color: var(--accent); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+.fun .big { font-family: var(--display); font-weight: 900; font-size: 48px; line-height: 1; color: var(--accent); display: block; }
+.fun .word { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1.05; display: block; }
+.fun .pron { font-style: italic; color: var(--muted); font-size: 15px; display: block; margin-bottom: 6px; }
+.fun .yr { font-family: var(--display); font-weight: 700; color: var(--accent); margin-right: 4px; }
+.fun p + p { margin-top: 8px; }
+.fun .q { font-style: italic; font-size: 20px; line-height: 1.35; display: block; margin: 4px 0 8px; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: var(--bg); padding: 0 3px; overflow-wrap: anywhere; }
+.verdict { border-left: 4px solid var(--accent); padding-left: 10px; font-style: italic; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; border-bottom: 1.5px solid var(--ink); padding: 4px 4px; }
+td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
+.r { text-align: right; } .up { color: var(--up); } .down { color: var(--down); }
+
+/* front */
+.teasers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.teaser { border-top: 4px solid var(--accent); background: var(--card); padding: 6px 9px 8px; font-size: 13.5px; line-height: 1.3; text-align: left; font-family: var(--body); color: var(--ink); border-left: 0; border-right: 0; border-bottom: 0; cursor: pointer; }
+.teaser .pg { color: var(--accent); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; display: block; }
+.teaser .t { font-family: var(--display); font-size: 16px; font-weight: 700; display: block; margin: 2px 0; }
+.mast { text-align: center; border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
+.mast .meta { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 4px; }
+.mast .name { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 12.5vw, 64px); line-height: 1; letter-spacing: -.02em; }
+.mast .motto { font-style: italic; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.mast .rail { border-top: 3px double var(--ink); margin-top: 6px; padding-top: 4px; font-size: 10px; letter-spacing: .16em; }
+.lead h1 { font-size: 31px; letter-spacing: -.015em; text-align: center; }
+.lead .dek { font-style: italic; color: var(--muted); text-align: center; margin-top: 6px; font-size: 17px; }
+.five p { padding-left: 22px; text-indent: -22px; font-size: 16px; }
+.five p + p { margin-top: 6px; }
+.five b { font-family: var(--display); color: var(--accent); display: inline-block; width: 22px; text-indent: 0; }
+.toc { display: grid; gap: 0; }
+.toc button { all: unset; display: flex; justify-content: space-between; border-bottom: 1px dotted var(--rule); padding: 8px 2px; cursor: pointer; font-size: 16px; }
+.toc button span:last-child { font-family: var(--display); font-weight: 700; }
+.toc button:focus-visible, .teaser:focus-visible, .pf button:focus-visible, .modes button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.modes { display: flex; border: 1px solid var(--ink); }
+.modes button { flex: 1; font: inherit; font-size: 14px; padding: 9px 6px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 700; }
+.hint { text-align: center; font-size: 13px; color: var(--muted); font-style: italic; }
+
+/* weather + strip + timeline */
+.wx { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wx h5 { font-family: var(--display); font-size: 17px; margin: 0; border-top: 2px solid var(--ink); padding-top: 4px; }
+.wx .t { font-family: var(--display); font-size: 36px; line-height: 1; }
+.wx table { font-size: 13.5px; }
+.wx td { padding: 3px 2px; }
+.strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.match { border: 1px solid var(--ink); text-align: center; font-size: 12.5px; padding: 4px 2px; line-height: 1.25; }
+.match b { font-family: var(--display); font-size: 22px; display: block; }
+.match.win { background: var(--ink); color: var(--bg); }
+.match.nx { border-style: dashed; color: var(--muted); }
+.tl { list-style: none; margin: 0; padding: 0 0 0 4px; }
+.tl li { position: relative; padding: 0 0 12px 22px; border-left: 2px solid var(--rule); }
+.tl li:last-child { border-color: transparent; }
+.tl li::before { content: ""; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ink); }
+.tl li.hot::before { background: var(--accent); border-color: var(--accent); }
+.tl .d { font-family: var(--display); font-weight: 700; font-size: 15px; display: block; }
+.tl .d em { font-style: normal; color: var(--accent); }
+
+/* sudoku */
+.sdk { border: 1px solid var(--ink); background: var(--card); padding: 12px; text-align: center; }
+.sdk .tt { font-family: var(--display); font-weight: 700; font-size: 24px; }
+.grid { display: grid; grid-template-columns: repeat(9, 1fr); width: min(100%, 360px); margin: 10px auto 10px; border: 2.5px solid var(--ink); background: var(--bg); }
+.grid > * { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-family: var(--display); font-size: clamp(16px, 5vw, 21px); box-sizing: border-box; min-width: 0; }
+.grid > :nth-child(9n+3), .grid > :nth-child(9n+6) { border-right: 2.5px solid var(--ink); }
+.grid > :nth-child(n+19):nth-child(-n+27), .grid > :nth-child(n+46):nth-child(-n+54) { border-bottom: 2.5px solid var(--ink); }
+.grid .g { font-weight: 700; color: var(--ink); background: var(--card); }
+.grid input { width: 100%; height: 100%; border: 0; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: transparent; text-align: center; font: inherit; color: var(--accent); padding: 0; border-radius: 0; caret-color: var(--accent); }
+.grid input:focus { outline: none; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.grid input.bad { color: var(--down); background: color-mix(in srgb, var(--down) 14%, transparent); }
+.sdk .btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.sdk .btns button { font: inherit; font-size: 14px; padding: 7px 12px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
+.sdk .msg { font-size: 14px; min-height: 20px; margin-top: 6px; color: var(--accent); font-weight: 600; }
+.sources p { font-size: 13.5px; color: var(--muted); }
+.sources p + p { margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { #bar i { transition: none; } }
+</style>
+
+</head><body>
+<div id="bar" aria-hidden="true"><i></i></div>
+<main id="reader" aria-label="The Paul Times, swipe left for the next page"></main>
+
+<div id="src">
+{{SECTIONS}}
+</div>
+
+<script>
+const SUDOKU = {{SUDOKU_DATA}};
+(function () {
+  const reader = document.getElementById('reader');
+  const barFill = document.querySelector('#bar i');
+  const src = [...document.querySelectorAll('#src > section')];
+  const ls = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const ISSUE = 'tpt-{{ISSUE_ID}}';
+  let mode = ls.get('tpt-mode', 'swipe');
+  const sstate = ls.get(ISSUE + '-sudoku', [{}, {}]);
+  let pages = [];
+
+  function buildToc() {
+    const toc = document.getElementById('toc');
+    toc.innerHTML = '';
+    src.slice(1).forEach((s, i) => {
+      const b = document.createElement('button');
+      b.dataset.goto = s.dataset.key;
+      b.style.setProperty('--accent', 'var(' + s.dataset.accent + ')');
+      b.innerHTML = '<span>' + s.dataset.title + '</span><span>' + (i + 2) + '</span>';
+      toc.appendChild(b);
+    });
+  }
+
+  function newPage(sec) {
+    const p = document.createElement('article');
+    p.className = 'page';
+    p.dataset.key = sec.dataset.key;
+    p.style.setProperty('--accent', 'var(' + sec.dataset.accent + ')');
+    p.innerHTML = '<header class="ph"><span class="mast-s">The Paul Times</span><span class="where"></span></header><div class="pb"></div><footer class="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="num"></span><button class="next" aria-label="Next page">Next ›</button></footer>';
+    reader.appendChild(p);
+    return p;
+  }
+
+  function renderSudoku(el) {
+    const i = +el.dataset.sudoku, d = SUDOKU[i], st = sstate[i] || (sstate[i] = {});
+    el.innerHTML = '<div class="kicker">Puzzle break</div><div class="tt">Sudoku No. ' + (i + 1) + ' · ' + d.label + '</div><div class="note">Tap a square, type 1 to 9.</div>';
+    const g = document.createElement('div');
+    g.className = 'grid';
+    d.puzzle.forEach((row, r) => row.forEach((v, c) => {
+      const k = r * 9 + c;
+      if (v) { const s = document.createElement('div'); s.className = 'g'; s.textContent = v; g.appendChild(s); }
+      else {
+        const inp = document.createElement('input');
+        inp.id = 'sdk' + i + '-' + k; inp.inputMode = 'numeric'; inp.maxLength = 1; inp.autocomplete = 'off';
+        inp.setAttribute('aria-label', 'Row ' + (r + 1) + ' column ' + (c + 1));
+        inp.dataset.s = i; inp.dataset.k = k;
+        if (st[k]) inp.value = st[k];
+        g.appendChild(inp);
+      }
+    }));
+    el.appendChild(g);
+    const btns = document.createElement('div');
+    btns.className = 'btns';
+    btns.innerHTML = '<button data-act="check" data-s="' + i + '">Check</button><button data-act="reveal" data-s="' + i + '">Reveal answer</button><button data-act="clear" data-s="' + i + '">Clear</button>';
+    el.appendChild(btns);
+    const m = document.createElement('div'); m.className = 'msg'; m.setAttribute('aria-live', 'polite'); el.appendChild(m);
+  }
+
+  function layout(keepKey) {
+    reader.innerHTML = '';
+    document.body.classList.toggle('mode-scroll', mode === 'scroll');
+    src.forEach(sec => {
+      let page = newPage(sec), body = page.querySelector('.pb');
+      [...sec.children].forEach(blk => {
+        const c = blk.cloneNode(true);
+        if (c.dataset.sudoku !== undefined) renderSudoku(c);
+        body.appendChild(c);
+        if (mode === 'scroll') return;
+        if (body.scrollHeight > body.clientHeight + 2 && body.children.length > 1) {
+          body.removeChild(c);
+          const carry = [];
+          while (body.children.length > 1 && body.lastElementChild.classList.contains('kn')) carry.unshift(body.lastElementChild), body.removeChild(body.lastElementChild);
+          page = newPage(sec); body = page.querySelector('.pb');
+          carry.forEach(x => body.appendChild(x));
+          body.appendChild(c);
+        }
+        if (body.scrollHeight > body.clientHeight + 2) body.classList.add('overflow');
+      });
+    });
+    pages = [...reader.querySelectorAll('.page')];
+    const counts = {};
+    pages.forEach(p => counts[p.dataset.key] = (counts[p.dataset.key] || 0) + 1);
+    const seen = {};
+    pages.forEach((p, idx) => {
+      const k = p.dataset.key; seen[k] = (seen[k] || 0) + 1;
+      const title = src.find(s => s.dataset.key === k).dataset.title;
+      p.querySelector('.where').textContent = counts[k] > 1 ? title + ' ' + seen[k] + '/' + counts[k] : title;
+      p.querySelector('.num').textContent = (idx + 1) + ' / ' + pages.length;
+      p.querySelector('.prev').disabled = idx === 0;
+      p.querySelector('.next').disabled = idx === pages.length - 1;
+    });
+    document.getElementById('m-swipe').setAttribute('aria-pressed', mode === 'swipe');
+    document.getElementById('m-scroll').setAttribute('aria-pressed', mode === 'scroll');
+    pages.forEach(p => p.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode)));
+    if (keepKey) goTo(keepKey, false);
+    onScroll();
+  }
+
+  function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
+  function goIdx(i, smooth) { reader.scrollTo({ left: i * reader.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
+  function goTo(key, smooth) { const i = pages.findIndex(p => p.dataset.key === key); if (i >= 0) goIdx(i, smooth); }
+
+  function onScroll() {
+    const i = current(), p = pages[i];
+    if (!p) return;
+    barFill.style.width = ((i + 1) / pages.length * 100) + '%';
+    document.documentElement.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
+    barFill.style.background = 'var(' + src.find(s => s.dataset.key === p.dataset.key).dataset.accent + ')';
+  }
+
+  reader.addEventListener('scroll', () => requestAnimationFrame(onScroll), { passive: true });
+  reader.addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.classList.contains('prev')) goIdx(current() - 1);
+    else if (t.classList.contains('next')) goIdx(current() + 1);
+    else if (t.dataset.goto) goTo(t.dataset.goto);
+    else if (t.dataset.mode) { if (mode !== t.dataset.mode) { mode = t.dataset.mode; ls.set('tpt-mode', mode); layout('front'); } }
+    else if (t.dataset.act) sudokuAction(t);
+  });
+  reader.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.s === undefined) return;
+    t.value = t.value.replace(/[^1-9]/g, '').slice(-1);
+    t.classList.remove('bad');
+    sstate[t.dataset.s][t.dataset.k] = t.value;
+    ls.set(ISSUE + '-sudoku', sstate);
+  });
+  function sudokuAction(b) {
+    const i = +b.dataset.s, d = SUDOKU[i], box = b.closest('.sdk'), msg = box.querySelector('.msg');
+    const inputs = [...box.querySelectorAll('input')];
+    if (b.dataset.act === 'check') {
+      let wrong = 0, empty = 0;
+      inputs.forEach(inp => { const k = +inp.dataset.k, v = +inp.value; if (!v) empty++; else if (v !== d.solution[Math.floor(k / 9)][k % 9]) { wrong++; inp.classList.add('bad'); } });
+      msg.textContent = wrong ? wrong + ' wrong, marked in red.' : empty ? 'All correct so far. ' + empty + ' squares to go.' : 'Solved. Well done.';
+    } else if (b.dataset.act === 'reveal') {
+      inputs.forEach(inp => { const k = +inp.dataset.k; inp.value = d.solution[Math.floor(k / 9)][k % 9]; inp.classList.remove('bad'); sstate[i][k] = inp.value; });
+      ls.set(ISSUE + '-sudoku', sstate); msg.textContent = 'Answer revealed.';
+    } else {
+      inputs.forEach(inp => { inp.value = ''; inp.classList.remove('bad'); });
+      sstate[i] = {}; ls.set(ISSUE + '-sudoku', sstate); msg.textContent = 'Cleared.';
+    }
+  }
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight') goIdx(current() + 1);
+    if (e.key === 'ArrowLeft') goIdx(current() - 1);
+  });
+  let rt, lastW = innerWidth, lastH = innerHeight;
+  addEventListener('resize', () => {
+    clearTimeout(rt);
+    rt = setTimeout(() => {
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      if (Math.abs(innerWidth - lastW) < 2 && Math.abs(innerHeight - lastH) < 80) return;
+      lastW = innerWidth; lastH = innerHeight;
+      const k = pages[current()] ? pages[current()].dataset.key : 'front';
+      layout(k);
+    }, 200);
+  });
+
+  buildToc();
+  const start = () => layout();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  start();
+})();
+</script>
+</body></html>

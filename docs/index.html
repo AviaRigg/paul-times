@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paul Times">
+<meta name="robots" content="noindex, nofollow">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>The Paul Times</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+:root { --bg: #f4f1ea; --ink: #16130f; --muted: #5f584d; --rule: #c9c1b2; --accent: #8a1c1c; --card: #ebe6db; }
+@media (prefers-color-scheme: dark) { :root { --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --accent: #e3817c; --card: #23201b; color-scheme: dark; } }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, serif; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: env(safe-area-inset-top, 0px) max(20px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(20px, env(safe-area-inset-left, 0px)); }
+.wrap { width: 100%; max-width: 380px; text-align: center; }
+.name { font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: 48px; line-height: 1; letter-spacing: -.02em; border-bottom: 3px double var(--ink); padding-bottom: 10px; }
+.sub { font-style: italic; color: var(--muted); margin: 10px 0 26px; }
+form { display: flex; flex-direction: column; gap: 12px; }
+input { font: inherit; font-size: 28px; letter-spacing: .4em; text-align: center; padding: 12px; border: 1.5px solid var(--ink); background: var(--card); color: var(--ink); border-radius: 0; }
+button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px; border: 0; background: var(--ink); color: var(--bg); cursor: pointer; text-decoration: none; display: block; }
+.msg { min-height: 22px; color: var(--accent); font-weight: 700; }
+.list { text-align: left; margin-top: 8px; }
+.list a { display: flex; justify-content: space-between; gap: 10px; color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--rule); padding: 11px 2px; }
+.list a span:last-child { color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; white-space: nowrap; }
+.small { font-size: 14px; color: var(--muted); margin-top: 18px; }
+.small a { color: var(--muted); }
+</style></head>
+<body>
+<div class="wrap">
+  <div class="name">The Paul Times</div>
+  <div class="sub" id="sub">Loading today's issue</div>
+  <div id="view"></div>
+</div>
+<script>
+(async function () {
+  const view = document.getElementById('view'), sub = document.getElementById('sub');
+  const qs = new URLSearchParams(location.search);
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+  const get = async p => { const r = await fetch(p + (p.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error(p + ' ' + r.status); return r.json(); };
+  let list = [], cfg;
+  try { [list, cfg] = await Promise.all([get('issues.json'), get('crypto.json')]); }
+  catch (e) { sub.textContent = 'Could not load the paper. Check your connection and reopen.'; return; }
+  const fmt = i => new Date(i.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+  function archive() {
+    sub.textContent = 'Past issues';
+    view.innerHTML = '<div class="list">' + list.map(i => '<a href="./?d=' + encodeURIComponent(i.id) + '"><span>' + fmt(i) + (i.title ? '<br><small style="color:var(--muted)">' + i.title.replace(/</g, '&lt;') + '</small>' : '') + '</span><span>' + i.edition + '</span></a>').join('') + '</div><p class="small"><a href="./">Back to today</a></p>';
+  }
+  if (qs.has('archive')) return archive();
+  if (!list.length) { sub.textContent = 'No issue yet. The first one arrives at 7:00.'; return; }
+  const issue = list.find(i => i.id === qs.get('d')) || list[0];
+
+  async function deriveKey(pw) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(cfg.salt), iterations: cfg.iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+  }
+  async function open(key) {
+    const enc = await get('issues/' + issue.id + '.enc');
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(enc.iv) }, key, b64(enc.ct));
+    return new TextDecoder().decode(pt);
+  }
+  function show(html) { document.open(); document.write(html); document.close(); }
+  async function saved() {
+    const raw = store.get('tpt-key-' + cfg.salt);
+    if (!raw) return null;
+    return crypto.subtle.importKey('raw', b64(raw), { name: 'AES-GCM' }, true, ['decrypt']);
+  }
+  function form(message) {
+    sub.textContent = fmt(issue) + (issue.edition === 'weekly' ? ' · Weekly' : '');
+    view.innerHTML = '<form id="f"><input id="pw" type="password" inputmode="numeric" autocomplete="current-password" aria-label="Password" placeholder="····"><button>Open today\'s paper</button><div class="msg" id="msg" aria-live="polite"></div></form><p class="small"><a href="./?archive">Past issues</a></p>';
+    const msg = document.getElementById('msg'); msg.textContent = message || '';
+    document.getElementById('f').addEventListener('submit', async e => {
+      e.preventDefault();
+      const pw = document.getElementById('pw').value.trim();
+      if (!pw) { msg.textContent = 'Enter your code first.'; return; }
+      msg.textContent = 'Unlocking...';
+      try {
+        const key = await deriveKey(pw);
+        const html = await open(key);
+        const raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));
+        store.set('tpt-key-' + cfg.salt, btoa(String.fromCharCode(...raw)));
+        show(html);
+      } catch (err) { msg.textContent = 'Wrong code. Try again.'; }
+    });
+  }
+  try {
+    const key = await saved();
+    if (key) { show(await open(key)); return; }
+  } catch (e) { store.del('tpt-key-' + cfg.salt); }
+  form();
+})();
+</script>
+</body></html>
