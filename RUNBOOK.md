@@ -128,7 +128,7 @@ shown; anything else is skipped silently. Never use photos from Google, news sit
 - `<figure class="photo blk" data-wiki="en|Article_Title" data-alt="..."><figcaption><b>Title.</b> Text.</figcaption></figure>`
   uses the lead image of a Wikipedia article (people, places, circuits, companies, games' developers).
   Prefer `fr|...` for French people and places.
-- `data-commons="search words"` searches Commons for a file photo (for example "oil tanker Strait of Hormuz").
+- `data-commons="search words"` searches Commons and takes the first hit. Last resort only: hits can be unrelated old events (a search for a tanker near Hormuz returned a 2012 US Navy collision). Prefer `data-wiki` (the Wikipedia article's lead image) or an exact `data-file`. Never use a photo of a different event as if it showed today's news; caption file images as file images.
 - `data-file="File:Exact_name.jpg"` for a specific Commons file.
 - Add `portrait` to the class for a small portrait floated beside text.
 Use 3 to 6 photos per issue: one on the front lead when a relevant photo exists (a file photo is
