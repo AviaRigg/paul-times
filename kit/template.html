@@ -216,6 +216,8 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .pgrid .poster figcaption { border: 0; padding: 4px 0 0; font-size: 12px; line-height: 1.25; }
 .pgrid .poster figcaption b { display: block; color: var(--accent); font-family: var(--body); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .addown input { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
+.addown input.need { border-color: var(--down); }
+.mylist .flash { background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; padding: 6px 10px; border-radius: 3px; margin: 0 0 6px; }
 .btns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
 .btns2 button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 9px 4px; border: 1.5px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; }
 .rt { font-weight: 700; white-space: nowrap; }
@@ -581,14 +583,20 @@ const SUDOKU = {{SUDOKU_DATA}};
   function renderList(el) {
     const d = sGet(); const items = Object.values(d.v).filter(x => x.a === 'list').sort((a, b) => (a.t || 0) - (b.t || 0));
     let pending = 0; try { pending = (JSON.parse(raw.get(OUT)) || []).length; } catch (e) {}
-    el.innerHTML = `<h4>My list (${items.length})</h4>` + (items.length ? '<ul>' + items.map(x => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.title)}</a>` : esc(x.title)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-k="${esc(sKey({ t: x.title, y: x.y }))}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>')
+    const flash = renderList.flash; renderList.flash = '';
+    el.innerHTML = (flash ? `<p class="flash">${esc(flash)}</p>` : '') + `<h4>My list (${items.length})</h4>` + (items.length ? '<ul>' + items.map(x => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.title)}</a>` : esc(x.title)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-k="${esc(sKey({ t: x.title, y: x.y }))}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>')
       + `<div class="addown"><p class="small" style="margin:10px 0 4px"><b>Watching something else?</b> Add it and the paper will follow it.</p>
          <input type="text" placeholder="Show or film title" aria-label="Show or film title">
          <div class="btns2"><button data-own="seen">I watch it</button><button data-own="list">+ My list</button></div></div>
          <p class="note" style="margin-top:8px">${FORM.action.startsWith('http') ? (pending ? pending + ' tap' + (pending > 1 ? 's' : '') + ' waiting to send' : 'All taps sent. The morning paper follows them.') : 'Saved on this phone only for now.'}</p>`;
     el.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { const x = sGet().v[b.dataset.k]; if (x) setVerdict({ t: x.title, y: x.y, kind: x.kind, where: x.where, link: x.link }, 'seen'); });
     const inp = el.querySelector('.addown input');
-    el.querySelectorAll('button[data-own]').forEach(b => b.onclick = () => { const t = inp.value.trim(); if (t) { setVerdict({ t, y: '', kind: 'added by you' }, b.dataset.own); } });
+    el.querySelectorAll('button[data-own]').forEach(b => b.onclick = () => {
+      const t = inp.value.trim();
+      if (!t) { inp.placeholder = 'Type a show or film title first'; inp.classList.add('need'); inp.focus(); return; }
+      renderList.flash = (b.dataset.own === 'list' ? '✓ Added ' + t + ' to My list' : '✓ The paper will follow ' + t);
+      setVerdict({ t, y: '', kind: 'added by you' }, b.dataset.own);
+    });
   }
   async function issueKey() {
     for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('tpt-key-')) {
