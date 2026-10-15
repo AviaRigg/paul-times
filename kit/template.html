@@ -55,7 +55,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 .ph .where { color: var(--accent); font-weight: 700; white-space: nowrap; }
 .pb { flex: 1; min-height: 0; overflow: hidden; padding: 14px max(18px, env(safe-area-inset-right, 0px)) 8px max(18px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .pb.overflow, .mode-scroll .pb { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.pf { display: flex; justify-content: space-between; align-items: center; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
+.pf { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
 .pf button { font: inherit; color: var(--accent); background: none; border: 0; padding: 6px 4px; cursor: pointer; font-weight: 700; letter-spacing: .06em; }
 .pf button:disabled { color: var(--rule); }
 .pf .num { font-family: var(--display); font-size: 14px; color: var(--ink); }
@@ -242,6 +242,7 @@ figure.photo.ready { display: block; }
 <div id="app">
 <div id="bar" aria-hidden="true"><i></i></div>
 <main id="reader" aria-label="The Paul Times, swipe left for the next page"></main>
+<footer class="pf" id="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="num"></span><button class="next" aria-label="Next page">Next ›</button></footer>
 </div>
 
 <div id="src">
@@ -280,6 +281,7 @@ const SUDOKU = {{SUDOKU_DATA}};
 
   const reader = document.getElementById('reader');
   const barFill = document.querySelector('#bar i');
+  const pf = document.getElementById('pf'), pfNum = pf.querySelector('.num'), pfPrev = pf.querySelector('.prev'), pfNext = pf.querySelector('.next');
   const src = [...document.querySelectorAll('#src > section')];
   const ls = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -307,7 +309,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     p.className = 'page';
     p.dataset.key = sec.dataset.key;
     p.style.setProperty('--accent', 'var(' + sec.dataset.accent + ')');
-    p.innerHTML = '<header class="ph"><span class="mast-s">The Paul Times</span><span class="where"></span></header><div class="pb"></div><footer class="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="num"></span><button class="next" aria-label="Next page">Next ›</button></footer>';
+    p.innerHTML = '<header class="ph"><span class="mast-s">The Paul Times</span><span class="where"></span></header><div class="pb"></div>';
     reader.appendChild(p);
     return p;
   }
@@ -366,10 +368,6 @@ const SUDOKU = {{SUDOKU_DATA}};
       const k = p.dataset.key; seen[k] = (seen[k] || 0) + 1;
       const title = src.find(s => s.dataset.key === k).dataset.title;
       p.querySelector('.where').textContent = counts[k] > 1 ? title + ' ' + seen[k] + '/' + counts[k] : title;
-      p.querySelector('.num').textContent = (idx + 1) + ' / ' + pages.length;
-      p.querySelector('.num').onclick = e => { const n = e.currentTarget; n._c = (n._c || 0) + 1; clearTimeout(n._t); n._t = setTimeout(() => { n._c = 0; }, 700); if (n._c < 3) return; n._c = 0; n.textContent = 'ih ' + innerHeight + ' vv ' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + ' sc ' + screen.height + ' app ' + app.offsetHeight + ' y ' + Math.round(scrollY); };
-      p.querySelector('.prev').disabled = idx === 0;
-      p.querySelector('.next').disabled = idx === pages.length - 1;
     });
     document.getElementById('m-swipe')?.setAttribute('aria-pressed', mode === 'swipe');
     document.getElementById('m-scroll')?.setAttribute('aria-pressed', mode === 'scroll');
@@ -721,12 +719,16 @@ const SUDOKU = {{SUDOKU_DATA}};
   function onScroll() {
     const i = current(), p = pages[i];
     if (!p) return;
+    pfNum.textContent = (i + 1) + ' / ' + pages.length; pfPrev.disabled = i === 0; pfNext.disabled = i === pages.length - 1;
     barFill.style.width = Math.min(100, (reader.scrollLeft / Math.max(1, reader.clientWidth) + 1) / pages.length * 100) + '%';
     document.documentElement.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
     barFill.style.background = 'var(' + src.find(s => s.dataset.key === p.dataset.key).dataset.accent + ')';
   }
 
   reader.addEventListener('scroll', () => requestAnimationFrame(onScroll), { passive: true });
+  pfPrev.onclick = () => goIdx(current() - 1);
+  pfNext.onclick = () => goIdx(current() + 1);
+  pfNum.onclick = e => { const n = pfNum; n._c = (n._c || 0) + 1; clearTimeout(n._t); n._t = setTimeout(() => { n._c = 0; }, 700); if (n._c < 3) return; n._c = 0; n.textContent = 'ih ' + innerHeight + ' vv ' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + ' sc ' + screen.height + ' app ' + app.offsetHeight + ' y ' + Math.round(scrollY); };
   reader.addEventListener('click', e => {
     const t = e.target.closest('button');
     if (!t) return;
