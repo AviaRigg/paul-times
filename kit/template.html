@@ -206,6 +206,15 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .mylist ul { padding: 0; margin: 4px 0 0; }
 .mylist li small { color: var(--muted); display: block; font-size: 12.5px; }
 .mylist li button { font: inherit; font-size: 12px; padding: 5px 8px; border: 1px solid var(--rule); background: transparent; color: var(--muted); border-radius: 3px; white-space: nowrap; }
+.pick .pwrap { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+.pick .pwrap .pimg { width: 42%; flex: none; margin: 0; aspect-ratio: 2 / 3; object-fit: cover; background: var(--rule); }
+.pick .pwrap .ptxt { flex: 1; min-width: 0; }
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px; }
+.pgrid .poster { margin: 0; }
+.pgrid .poster .pp { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; border-radius: 2px; background: var(--card); }
+.pgrid .poster .pp.ph { display: flex; align-items: center; justify-content: center; text-align: center; padding: 6px; box-sizing: border-box; font-family: var(--display); font-size: 14px; line-height: 1.15; border: 1px solid var(--rule); }
+.pgrid .poster figcaption { border: 0; padding: 4px 0 0; font-size: 12px; line-height: 1.25; }
+.pgrid .poster figcaption b { display: block; color: var(--accent); font-family: var(--body); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .rt { font-weight: 700; white-space: nowrap; }
 .rt.fresh { color: var(--down); } .rt.rotten { color: var(--up); }
 figure.photo { display: none; }
@@ -346,6 +355,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     loadPhotos(reader);
     loadWeather(reader);
     loadScreen(reader);
+    loadPosters(reader);
   }
 
 
@@ -503,6 +513,28 @@ const SUDOKU = {{SUDOKU_DATA}};
       els.forEach(e => wxRender(e, wxCache.d));
     } catch (e) { /* keep the printed forecast */ }
   }
+  // ---------- posters: Wikipedia lead image of the film or show (any licence: cover art), cached on the phone ----------
+  async function posterFor(spec) {
+    const ck = 'tpt-poster-' + spec;
+    try { const c = localStorage.getItem(ck); if (c) return c; } catch (e) {}
+    const [lang, title] = spec.split('|');
+    const r = await fetch('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&redirects=1&titles=' + encodeURIComponent(title));
+    const d = await r.json(); const p = Object.values((d.query && d.query.pages) || {})[0];
+    const src = p && p.thumbnail && p.thumbnail.source;
+    if (src) { try { localStorage.setItem(ck, src); } catch (e) {} }
+    return src || null;
+  }
+  function loadPosters(root) {
+    root.querySelectorAll('.poster[data-pwiki]:not(.done)').forEach(fig => {
+      fig.classList.add('done');
+      const box = document.createElement('div'); box.className = 'pp ph'; box.textContent = fig.dataset.t || '';
+      fig.insertBefore(box, fig.firstChild);
+      posterFor(fig.dataset.pwiki).then(src => {
+        if (!src) return; const img = new Image(); img.className = 'pp'; img.alt = fig.dataset.t || ''; img.referrerPolicy = 'no-referrer';
+        img.onload = () => box.replaceWith(img); img.src = src;
+      }).catch(() => {});
+    });
+  }
   // ---------- screen: tonight's pick (verdicts kept on this phone) ----------
   const SK = 'tpt-screen';
   function sGet() { try { return JSON.parse(localStorage.getItem(SK)) || { v: {}, list: [] }; } catch (e) { return { v: {}, list: [] }; } }
@@ -514,11 +546,13 @@ const SUDOKU = {{SUDOKU_DATA}};
     const d = sGet(); const todo = picks.filter(p => !d.v[sKey(p)]);
     if (!todo.length) { el.innerHTML = '<span class="lbl">Tonight\'s pick</span><p class="why" style="margin:0">You have rated every pick in this issue. New picks tomorrow.</p>'; return; }
     const p = todo[0];
-    el.innerHTML = `<span class="lbl">Tonight's pick</span>${p.img ? `<img class="pimg" referrerpolicy="no-referrer" src="${esc(p.img)}" alt="${esc(p.t)}" onerror="this.remove()">` : ''}
-      <h4>${esc(p.t)}</h4><div class="meta">${esc([p.kind, p.y, p.where, p.rt ? 'RT ' + p.rt : ''].filter(Boolean).join(' · '))}</div>
+    el.innerHTML = `<span class="lbl">Tonight's pick</span><div class="pwrap"><img class="pimg" referrerpolicy="no-referrer" alt="${esc(p.t)} poster" hidden><div class="ptxt">
+      <h4>${esc(p.t)}</h4><div class="meta">${esc([p.kind, p.y, p.where, p.rt ? 'RT ' + p.rt : ''].filter(Boolean).join(' · '))}</div></div></div>
       <p class="why">${esc(p.why)}</p>
       <div class="btns"><button data-a="seen">✓ Seen it</button><button data-a="no">✗ Not for me</button><button data-a="list" class="add">+ My list</button></div>
       <div class="left">${todo.length - 1 ? (todo.length - 1) + ' more pick' + (todo.length > 2 ? 's' : '') + ' after this' : 'Last pick today'}</div>`;
+    const pim = el.querySelector('.pimg');
+    (p.img ? Promise.resolve(p.img) : p.wiki ? posterFor(p.wiki) : Promise.resolve(null)).then(src => { if (src) { pim.onload = () => { pim.hidden = false; }; pim.src = src; } }).catch(() => {});
     el.querySelectorAll('button').forEach(b => b.onclick = () => {
       const d2 = sGet(); d2.v[sKey(p)] = b.dataset.a;
       if (b.dataset.a === 'list' && !d2.list.some(x => sKey(x) === sKey(p))) d2.list.push({ t: p.t, y: p.y, kind: p.kind, where: p.where, link: p.link, added: el.dataset.issue || '' });
