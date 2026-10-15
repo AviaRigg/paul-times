@@ -11,8 +11,8 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
 
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
-| Daily | Mon to Sat, 07:00 Amsterdam | `YYYY-MM-DD` | last 24 hours | about 40 to 45 phone screens | 2: `Medium:32,Hard:25` |
-| Weekly | Sunday, 09:00 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | about 70 to 90 screens | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+| Daily | Mon to Sat, 07:00 Amsterdam | `YYYY-MM-DD` | last 24 hours | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
+| Weekly | Sunday, 09:00 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | 10 section pages, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
 
 ## Steps
 
@@ -31,18 +31,24 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    - Write one blunt "Straight talk" line: biggest gap between weight and target, and what his
      next weekly buys should favour. He rebalances only by adding money (no selling).
      End with "Information, not financial advice."
-4. Create `issues/<id>/` and write:
+4. Weather (Local section): you have no weather tool, so use WebSearch, for example
+   "yr.no Amsterdam forecast" and "yr.no Annecy forecast", then WebFetch the yr.no forecast
+   page from the results (fall back to another forecast site from the results if it fails).
+   Get today's high, and min/max °C plus rain chance for the next 3 days, for both cities.
+   NEVER copy the weather from a previous issue. If no forecast can be read, replace the
+   weather box contents with "Weather unavailable today" and say so in your final report.
+5. Create `issues/<id>/` and write:
    - `sections.html` (structure below). Copy the previous issue's file as the starting pattern.
    - `charts.json` (see `kit/charts.py` docstring for every chart type).
-5. Build: `TPT_PASSWORD=<code from your task instructions> python kit/build.py <id> --edition daily --title "<short lead headline>" --sudoku Medium:32,Hard:25`
+6. Build: `TPT_PASSWORD=<code from your task instructions> python kit/build.py <id> --edition daily --title "<short lead headline>" --sudoku Medium:32,Hard:25`
    Check the output: every chart "ok", no "WARNING". Fix and rebuild if not.
-6. Optional self-check: open `build/<id>.html` in Playwright at 390x760 and confirm
-   `document.querySelectorAll('.page').length` is in range and no page body has class `overflow`.
-7. Commit and push to `main`:
+7. Optional self-check: open `build/<id>.html` in Playwright at 390x760 and confirm
+   `document.querySelectorAll('.page').length` is 10 and nothing overflows horizontally.
+8. Commit and push to `main`:
    `git add docs issues && git commit -m "Issue <id>" && git push`
    Never commit `build/` or the password. Never print the password in commit messages.
-8. Wait about 90 seconds, then confirm `<site URL from README.md>/issues.json`
-   lists the new id. Report the headline and the screen count in one short message.
+9. Wait about 90 seconds, then confirm `<site URL from README.md>/issues.json`
+   lists the new id. Report the headline and anything that failed in one short message.
 
 ## Sections (in this order)
 

@@ -189,7 +189,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   };
   const ISSUE = 'tpt-{{ISSUE_ID}}';
-  let mode = ls.get('tpt-mode', 'swipe');
+  let mode = 'scroll';
   const sstate = ls.get(ISSUE + '-sudoku', [{}, {}]);
   let pages = [];
 
