@@ -48,7 +48,8 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    writes `issues/<id>/screen-state.json` (the build puts it in the issue so his phone stays in
    sync) and prints three lists. Use them in the Screen section: every SEEN series joins "Your
    shows" coverage; say when a MY LIST title arrives on a Dutch streamer or in cinemas; never
-   suggest any listed title again; steer picks away from NOT FOR ME. Rows that do not decrypt are
+   suggest any listed title again; steer picks away from NOT FOR ME. A NOT SURE title may come back
+   once after 30 days, with a different angle on why he would like it. Rows that do not decrypt are
    junk: ignore them. If the Sheet cannot be read, skip this step and say so in the final report.
 5. Create `issues/<id>/` and write:
    - `sections.html` (structure below). First unlock the previous issue's source with

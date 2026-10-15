@@ -48,4 +48,8 @@ group = lambda a: sorted(v["title"] + (f" ({v['kind']})" if v["kind"] else "") f
 print("SEEN / WATCHES (follow these in 'Your shows', never suggest again):", "; ".join(group("seen")) or "none")
 print("MY LIST (tell him when one comes to a Dutch streamer or cinema, never suggest again):", "; ".join(group("list")) or "none")
 print("NOT FOR ME (never suggest; steer away from similar):", "; ".join(group("no")) or "none")
+import time
+later = sorted((v["title"], (time.time() * 1000 - v["t"]) / 86400000) for v in state.values() if v["a"] == "later")
+print("NOT SURE (do not suggest again within 30 days; after that it may come back once, with a better reason):",
+      "; ".join(f"{t} ({d:.0f} days ago)" for t, d in later) or "none")
 print(f"{len(state)} titles, {bad} rows ignored (not decryptable)")
