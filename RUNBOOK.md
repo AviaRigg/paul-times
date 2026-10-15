@@ -46,8 +46,10 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    Google Sheets connector, save the result as JSON to `/tmp/taps.json`, then run
    `TPT_PASSWORD=<code> python kit/screen_state.py /tmp/taps.json <id>`. It decrypts his taps,
    writes `issues/<id>/screen-state.json` (the build puts it in the issue so his phone stays in
-   sync) and prints three lists. Use them in the Screen section: every SEEN series joins "Your
-   shows" coverage; say when a MY LIST title arrives on a Dutch streamer or in cinemas; never
+   sync) and prints three lists. Use them in the Screen section: every SEEN series (including ones
+   he added himself) joins "Your shows" coverage: new season, trailer, renewal, cancellation, cast;
+   for SEEN films, report sequel, spin-off and franchise news; say when a MY LIST title arrives on
+   a Dutch streamer or in cinemas; never
    suggest any listed title again; steer picks away from NOT FOR ME. A NOT SURE title may come back
    once after 30 days, with a different angle on why he would like it. Rows that do not decrypt are
    junk: ignore them. If the Sheet cannot be read, skip this step and say so in the final report.
