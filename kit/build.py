@@ -71,6 +71,11 @@ key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=cfg
 iv = os.urandom(12)
 ct = AESGCM(key).encrypt(iv, html.encode("utf-8"), None)
 os.makedirs(os.path.join(ROOT, "docs", "issues"), exist_ok=True)
+# encrypted copy of the source, so the next run can use it as a pattern without plain text in the public repo
+siv = os.urandom(12)
+json.dump({"v": 1, "iv": base64.b64encode(siv).decode(),
+           "ct": base64.b64encode(AESGCM(key).encrypt(siv, open(os.path.join(folder, "sections.html"), "rb").read(), None)).decode()},
+          open(os.path.join(folder, "sections.enc"), "w"))
 json.dump({"v": 1, "iv": base64.b64encode(iv).decode(), "ct": base64.b64encode(ct).decode()},
           open(os.path.join(ROOT, "docs", "issues", a.id + ".enc"), "w"))
 

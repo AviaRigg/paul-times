@@ -42,23 +42,27 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    is just "Live forecast loads when you open the issue." Do not write a separate
    "Scooter check" paragraph; the live box covers it.
 5. Create `issues/<id>/` and write:
-   - `sections.html` (structure below). Copy the previous issue's file as the starting pattern,
+   - `sections.html` (structure below). First unlock the previous issue's source with
+     `TPT_PASSWORD=<code> python kit/unlock.py <previous id>`, then copy it as the starting pattern,
      but follow THIS file where they differ (older issues contain charts; new ones must not).
    - NO `charts.json`. Paul's rule: never draw graphs, charts, maps or schematics. Visuals are
      real photos only (see Photos). Numbers go in tables, strips and text.
 6. Build: `TPT_PASSWORD=<code from your task instructions> python kit/build.py <id> --edition daily --title "<short lead headline>" --sudoku Medium:32,Hard:25`
    Check the output: no "WARNING". Fix and rebuild if not.
 7. Optional self-check: open `build/<id>.html` in Playwright at 390x760 and confirm
-   `document.querySelectorAll('.page').length` is 10 and nothing overflows horizontally.
+   `document.querySelectorAll('.page').length` is 12 and nothing overflows horizontally.
 8. Commit and push to `main`:
    `git add docs issues && git commit -m "Issue <id>" && git push`
+   Plain `issues/*/sections.html` is gitignored on purpose: the repo is public and it holds Paul's
+   portfolio. The build writes an encrypted `sections.enc` next to it, and that is what gets
+   committed. Never force-add the plain file.
    Never commit `build/` or the password. Never print the password in commit messages.
 9. Wait about 90 seconds, then confirm `<site URL from README.md>/issues.json`
    lists the new id. Report the headline and anything that failed in one short message.
 
 ## Sections (in this order)
 
-Each section is a `<section data-key data-title data-accent>` in `sections.html`. The big number in each section opener is its position (World 2, France 3, Local 4 ... Back Page 11).
+Each section is a `<section data-key data-title data-accent>` in `sections.html`. The big number in each section opener is its position (World 2, France 3, Local 4 ... Sport 9, Screen 10, Week 11, Back Page 12).
 
 1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1), two teasers
    (`data-goto` a section key), lead headline + dek, a big lead PHOTO, In brief, 2 paragraphs,
@@ -108,10 +112,37 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
 9. **sport** (`--a-sport`): F1 (results, standings, technical news; add a "Tech desk · for the SF-26
    project" box, he is rigging an F1 car; standings as a table), tennis (big results and French players), Les Bleus
    (men's national team; results strip), **On this day** (3 dated historical events for today).
-10. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
+10. **screen** (`--a-screen`, data-title "Screen"): films and TV, picked for Paul's taste.
+   His taste: animation films (Pixar, DreamWorks, Disney, Sony Animation, Ghibli, French animation),
+   Marvel, big blockbusters, French films. TV: Rick and Morty, Brooklyn Nine-Nine, Modern Family,
+   Suits, Star Wars series (The Mandalorian, Andor, Ahsoka etc.); of Marvel series he has only
+   watched Loki. Skip horror and prestige drama unless it is huge news.
+   - **Lead**: the biggest film or TV story of the day in his lanes (a trailer, a release, box
+     office, a casting, a renewal), with a photo (poster or still via the article's lead image).
+   - **Rotten Tomatoes box**: table of recent releases in his lanes (last 4 to 6 weeks): title,
+     Tomatometer %, Popcornmeter %, one-word verdict. Get scores from rottentomatoes.com (WebFetch
+     the film page); if it cannot be read, use a news report that quotes the scores and say
+     "via <source>". Never invent a score; write "n/a" if none found.
+   - **Coming soon**: next releases in his lanes with Netherlands cinema date (Pathé/Vue
+     Amsterdam, original version) and France date for French films; streaming premieres with
+     platform (Netflix, Disney+, Prime Video, Max).
+   - **Your shows**: any news on his shows (new season, episode, trailer, cast, renewal). If
+     nothing, skip it rather than pad.
+   - **Tonight's pick + My list** (always last): 5 picks he probably has not seen, best first,
+     matched to his taste (comedy like B99 and Modern Family, adult animation like Rick and Morty,
+     legal drama like Suits, Star Wars, Marvel, great animation films), with where to stream in the
+     Netherlands and why in one line:
+     `<div class="pick blk" data-pick='[{"t":"Title","y":"2021","kind":"Animated series","where":"Netflix","rt":"100%","why":"Why HE would like it","img":"optional image URL","link":"optional URL"}]'></div>`
+     then `<div class="mylist blk" data-mylist></div>`. His phone shows one pick at a time with
+     "Seen it / Not for me / + My list" buttons, remembers the taps and keeps his list. You cannot
+     see those taps, so never repeat a title that was in a pick list in the last 30 issues
+     (unlock and check the previous issues' sources). Only give an "rt" you verified. Weekly: 8 picks.
+   Photos: posters, stills and trailer frames from studio pages or news articles (route 1 or 2 in
+   Photos). Weekly edition: add the week's box office top 5 (worldwide) and all trailers released.
+11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
    editorial (one opinion piece on the top story, ending with the opposing view), Sudoku No. 2
    (`data-sudoku="1"`). Weekly: put Sudoku 3 and 4 here too.
-11. **back** (`--a-back`): **Rigging tip of the day** (Maya 2026, practical, with a short
+12. **back** (`--a-back`): **Rigging tip of the day** (Maya 2026, practical, with a short
     `maya.cmds` snippet that actually works), sources by section, "Past issues" link, footer note.
 
 ## Writing rules

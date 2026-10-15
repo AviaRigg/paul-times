@@ -17,7 +17,7 @@
   --bg: #f4f1ea; --ink: #16130f; --muted: #5f584d; --rule: #c9c1b2; --card: #ebe6db; --plate: #f7f3ea;
   --up: #1d6b2f; --down: #a3201d;
   --a-front: #8a1c1c; --a-world: #8a1c1c; --a-france: #33409a; --a-local: #2e6b66; --a-markets: #1f4e79; --a-crypto: #a55a15;
-  --a-tech: #5a3f8a; --a-craft: #a8441a; --a-sport: #23703a; --a-week: #7a5c00; --a-back: #4f4a42;
+  --a-tech: #5a3f8a; --a-craft: #a8441a; --a-sport: #23703a; --a-screen: #9b1f5a; --a-week: #7a5c00; --a-back: #4f4a42;
   --display: "Playfair Display", "Iowan Old Style", Georgia, serif;
   --body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
   --accent: var(--a-front);
@@ -26,13 +26,13 @@
   --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --card: #23201b; --plate: #efe9dc;
   --up: #6cc485; --down: #ee7d76;
   --a-front: #e3817c; --a-world: #e3817c; --a-france: #9ea7f2; --a-local: #72bdb4; --a-markets: #82acd9; --a-crypto: #e2a464;
-  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-week: #d8b552; --a-back: #b9b1a3;
+  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-screen: #ec8fbd; --a-week: #d8b552; --a-back: #b9b1a3;
   color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --card: #23201b; --plate: #efe9dc;
   --up: #6cc485; --down: #ee7d76;
   --a-front: #e3817c; --a-world: #e3817c; --a-france: #9ea7f2; --a-local: #72bdb4; --a-markets: #82acd9; --a-crypto: #e2a464;
-  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-week: #d8b552; --a-back: #b9b1a3;
+  --a-tech: #ad97d9; --a-craft: #e88e67; --a-sport: #74c48c; --a-screen: #ec8fbd; --a-week: #d8b552; --a-back: #b9b1a3;
   color-scheme: dark; }
 
 html, body { height: 100%; }
@@ -189,6 +189,25 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .wxl h5 { font-family: var(--display); font-size: 17px; margin: 10px 0 2px; }
 .wxl table td { font-size: 14px; padding: 4px 3px; }
 .wxl .wet { color: var(--down); font-weight: 700; }
+/* screen: tonight's pick + my list */
+.pick { border: 2px solid var(--accent); background: var(--card); padding: 12px 14px; }
+.pick .lbl { display: block; color: var(--accent); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+.pick .pimg { width: 100%; height: auto; display: block; margin-bottom: 8px; border-radius: 2px; }
+.pick h4 { font-size: 23px; margin: 0; }
+.pick .meta { font-size: 13px; color: var(--muted); margin: 2px 0 6px; }
+.pick .why { font-size: 16px; margin: 0 0 10px; }
+.pick .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.pick .btns button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 10px 4px; border: 1.5px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; cursor: pointer; }
+.pick .btns button.add { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pick .left { font-size: 12px; color: var(--muted); margin-top: 8px; text-align: center; }
+.mylist { border-top: 3px solid var(--accent); padding-top: 6px; }
+.mylist h4 { font-size: 19px; }
+.mylist li { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--rule); padding: 7px 0; font-size: 15px; list-style: none; }
+.mylist ul { padding: 0; margin: 4px 0 0; }
+.mylist li small { color: var(--muted); display: block; font-size: 12.5px; }
+.mylist li button { font: inherit; font-size: 12px; padding: 5px 8px; border: 1px solid var(--rule); background: transparent; color: var(--muted); border-radius: 3px; white-space: nowrap; }
+.rt { font-weight: 700; white-space: nowrap; }
+.rt.fresh { color: var(--down); } .rt.rotten { color: var(--up); }
 figure.photo { display: none; }
 .photo.light .ph-img { background: #fff; padding: 8px; box-sizing: border-box; }
 .photo .credit a { color: inherit; }
@@ -326,6 +345,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     onScroll();
     loadPhotos(reader);
     loadWeather(reader);
+    loadScreen(reader);
   }
 
 
@@ -482,6 +502,39 @@ const SUDOKU = {{SUDOKU_DATA}};
       }
       els.forEach(e => wxRender(e, wxCache.d));
     } catch (e) { /* keep the printed forecast */ }
+  }
+  // ---------- screen: tonight's pick (verdicts kept on this phone) ----------
+  const SK = 'tpt-screen';
+  function sGet() { try { return JSON.parse(localStorage.getItem(SK)) || { v: {}, list: [] }; } catch (e) { return { v: {}, list: [] }; } }
+  function sPut(d) { try { localStorage.setItem(SK, JSON.stringify(d)); } catch (e) {} }
+  const sKey = p => (p.t + '|' + (p.y || '')).toLowerCase();
+  const esc = x => String(x == null ? '' : x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderPick(el) {
+    let picks = []; try { picks = JSON.parse(el.dataset.pick); } catch (e) {}
+    const d = sGet(); const todo = picks.filter(p => !d.v[sKey(p)]);
+    if (!todo.length) { el.innerHTML = '<span class="lbl">Tonight\'s pick</span><p class="why" style="margin:0">You have rated every pick in this issue. New picks tomorrow.</p>'; return; }
+    const p = todo[0];
+    el.innerHTML = `<span class="lbl">Tonight's pick</span>${p.img ? `<img class="pimg" referrerpolicy="no-referrer" src="${esc(p.img)}" alt="${esc(p.t)}" onerror="this.remove()">` : ''}
+      <h4>${esc(p.t)}</h4><div class="meta">${esc([p.kind, p.y, p.where, p.rt ? 'RT ' + p.rt : ''].filter(Boolean).join(' · '))}</div>
+      <p class="why">${esc(p.why)}</p>
+      <div class="btns"><button data-a="seen">✓ Seen it</button><button data-a="no">✗ Not for me</button><button data-a="list" class="add">+ My list</button></div>
+      <div class="left">${todo.length - 1 ? (todo.length - 1) + ' more pick' + (todo.length > 2 ? 's' : '') + ' after this' : 'Last pick today'}</div>`;
+    el.querySelectorAll('button').forEach(b => b.onclick = () => {
+      const d2 = sGet(); d2.v[sKey(p)] = b.dataset.a;
+      if (b.dataset.a === 'list' && !d2.list.some(x => sKey(x) === sKey(p))) d2.list.push({ t: p.t, y: p.y, kind: p.kind, where: p.where, link: p.link, added: el.dataset.issue || '' });
+      sPut(d2); renderPick(el); document.querySelectorAll('[data-mylist]').forEach(renderList);
+    });
+  }
+  function renderList(el) {
+    const d = sGet();
+    el.innerHTML = `<h4>My list (${d.list.length})</h4>` + (d.list.length ? '<ul>' + d.list.map((x, i) => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.t)}</a>` : esc(x.t)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-i="${i}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>');
+    el.querySelectorAll('button[data-i]').forEach(b => b.onclick = () => {
+      const d2 = sGet(); const x = d2.list.splice(+b.dataset.i, 1)[0]; if (x) d2.v[sKey(x)] = 'seen'; sPut(d2); renderList(el);
+    });
+  }
+  function loadScreen(root) {
+    root.querySelectorAll('[data-pick]').forEach(el => { el.dataset.issue = '{{ISSUE_ID}}'; renderPick(el); });
+    root.querySelectorAll('[data-mylist]').forEach(renderList);
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
   function goIdx(i, smooth) { reader.scrollTo({ left: i * reader.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
