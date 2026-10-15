@@ -344,8 +344,9 @@ const SUDOKU = {{SUDOKU_DATA}};
       resolvePhoto(fig).then(info => {
         if (!info) return;
         const img = new Image();
-        img.className = 'ph-img'; img.alt = fig.dataset.alt || ''; img.width = info.w; img.height = info.h; img.loading = 'lazy'; img.decoding = 'async';
-        img.onload = () => fig.classList.add('ready');
+        img.className = 'ph-img'; img.alt = fig.dataset.alt || ''; img.width = info.w; img.height = info.h; img.decoding = 'async';
+        img.onerror = () => fig.classList.remove('ready');
+        fig.classList.add('ready');
         img.src = info.src;
         fig.insertBefore(img, fig.firstChild);
         const cap = fig.querySelector('figcaption') || fig.appendChild(document.createElement('figcaption'));
