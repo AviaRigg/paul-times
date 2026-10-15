@@ -46,9 +46,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 #bar::after { content: ""; position: absolute; left: 0; right: 0; top: -16px; bottom: -18px; }
 #bar i { transform-origin: top; }
 #bar.scrub i { transform: scaleY(3); transition: none; }
-#bartip { position: absolute; top: 16px; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: 14px; font-weight: 700; padding: 7px 11px; border-radius: 4px; white-space: nowrap; pointer-events: none; display: none; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
-#bar.scrub #bartip { display: block; }
-#bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: width .2s, background .2s; }
+#bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: background .25s; }
 #reader { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
 #reader::-webkit-scrollbar { display: none; }
 .page { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; box-sizing: border-box; }
@@ -671,32 +669,57 @@ const SUDOKU = {{SUDOKU_DATA}};
     root.querySelectorAll('[data-mylist]').forEach(renderList);
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
-  function goIdx(i, smooth) { reader.scrollTo({ left: i * reader.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
+  let glideRaf = 0;
+  function glideTo(left, ms) {
+    // Own easing instead of the browser's: iOS often ignores smooth scrolling on snap containers.
+    cancelAnimationFrame(glideRaf);
+    const from = reader.scrollLeft, d = left - from; if (Math.abs(d) < 1) { reader.scrollLeft = left; return; }
+    const dur = ms || Math.min(650, 260 + Math.abs(d) / reader.clientWidth * 45);
+    reader.style.scrollSnapType = 'none'; reader.style.scrollBehavior = 'auto';
+    const t0 = performance.now();
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      reader.scrollLeft = from + d * e;
+      if (k < 1) glideRaf = requestAnimationFrame(step);
+      else { reader.scrollLeft = left; reader.style.scrollSnapType = ''; reader.style.scrollBehavior = ''; }
+    };
+    glideRaf = requestAnimationFrame(step);
+  }
+  function goIdx(i, smooth) {
+    i = Math.max(0, Math.min(pages.length - 1, i));
+    if (smooth === false) { cancelAnimationFrame(glideRaf); reader.scrollLeft = i * reader.clientWidth; return; }
+    glideTo(i * reader.clientWidth);
+  }
   // Scrub: hold the progress bar and slide left/right to jump through pages.
   const bar = document.getElementById('bar');
-  const tip = document.createElement('div'); tip.id = 'bartip'; bar.appendChild(tip);
   let scrub = false, lastI = -1;
+  let scrubPos = 0;
   function scrubAt(x) {
     const r = bar.getBoundingClientRect(); if (!pages.length || !r.width) return;
-    const f = Math.min(0.9999, Math.max(0, (x - r.left) / r.width)); const i = Math.floor(f * pages.length);
-    if (i !== lastI) {
-      lastI = i; goIdx(i, false);
-      const sec = src.find(s => s.dataset.key === pages[i].dataset.key);
-      tip.textContent = (i + 1) + ' / ' + pages.length + ' · ' + (sec ? sec.dataset.title : '');
-      if (navigator.vibrate) navigator.vibrate(4);
-    }
-    tip.style.left = Math.min(r.width - 80, Math.max(80, x - r.left)) + 'px';
+    const f = Math.min(1, Math.max(0, (x - r.left) / r.width));
+    const w = reader.clientWidth; scrubPos = f * (pages.length - 1) * w;
+    reader.scrollLeft = scrubPos;            // follows the finger continuously
+    const i = Math.round(scrubPos / w);
   }
-  bar.addEventListener('pointerdown', e => { scrub = true; lastI = -1; bar.classList.add('scrub'); try { bar.setPointerCapture(e.pointerId); } catch (_) {} scrubAt(e.clientX); e.preventDefault(); });
+  bar.addEventListener('pointerdown', e => {
+    cancelAnimationFrame(glideRaf); scrub = true; lastI = -1; bar.classList.add('scrub');
+    reader.style.scrollSnapType = 'none'; reader.style.scrollBehavior = 'auto';
+    try { bar.setPointerCapture(e.pointerId); } catch (_) {}
+    scrubAt(e.clientX); e.preventDefault();
+  });
   bar.addEventListener('pointermove', e => { if (scrub) { scrubAt(e.clientX); e.preventDefault(); } });
-  const scrubEnd = () => { if (scrub) { scrub = false; bar.classList.remove('scrub'); } };
+  const scrubEnd = () => {
+    if (!scrub) return; scrub = false; bar.classList.remove('scrub');
+    const i = Math.round(scrubPos / reader.clientWidth);
+    glideTo(i * reader.clientWidth, 260);   // glide onto the nearest page
+  };
   bar.addEventListener('pointerup', scrubEnd); bar.addEventListener('pointercancel', scrubEnd);
   function goTo(key, smooth) { const i = pages.findIndex(p => p.dataset.key === key); if (i >= 0) goIdx(i, smooth); }
 
   function onScroll() {
     const i = current(), p = pages[i];
     if (!p) return;
-    barFill.style.width = ((i + 1) / pages.length * 100) + '%';
+    barFill.style.width = Math.min(100, (reader.scrollLeft / Math.max(1, reader.clientWidth) + 1) / pages.length * 100) + '%';
     document.documentElement.style.setProperty('--accent', getComputedStyle(p).getPropertyValue('--accent'));
     barFill.style.background = 'var(' + src.find(s => s.dataset.key === p.dataset.key).dataset.accent + ')';
   }
