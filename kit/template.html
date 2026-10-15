@@ -190,6 +190,8 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .wxl table td { font-size: 14px; padding: 4px 3px; }
 .wxl .wet { color: var(--down); font-weight: 700; }
 figure.photo { display: none; }
+.photo.light .ph-img { background: #fff; padding: 8px; box-sizing: border-box; }
+.photo .credit a { color: inherit; }
 figure.photo.ready { display: block; }
 .photo .ph-img { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--card); }
 .photo .credit { display: block; font-size: 11.5px; font-style: italic; color: var(--muted); margin-top: 3px; }
@@ -337,7 +339,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     const p = Object.values(d.query.pages)[0];
     if (!p || p.missing !== undefined || !p.imageinfo) return null;
     const ii = p.imageinfo[0];
-    if (!/^image\/(jpeg|png|webp)$/.test(ii.mime || '')) return null;
+    if (!/^image\/(jpeg|png|webp|svg\+xml|gif)$/.test(ii.mime || '')) return null;
     if (!(ii.thumburl || '').includes('/wikipedia/commons/')) return null;
     const m = ii.extmetadata || {};
     const lic = strip(m.LicenseShortName && m.LicenseShortName.value);
@@ -345,6 +347,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     return { src: ii.thumburl, w: ii.thumbwidth, h: ii.thumbheight, artist: strip(m.Artist && m.Artist.value).slice(0, 60), lic: lic, page: ii.descriptionurl };
   }
   async function resolvePhoto(fig) {
+    if (fig.dataset.src) return { src: fig.dataset.src, direct: true, artist: fig.dataset.credit || '', page: fig.dataset.link || '' };
     const key = fig.dataset.file || fig.dataset.wiki || fig.dataset.commons;
     try { const c = JSON.parse(localStorage.getItem(PHOTO_CACHE + key)); if (c) return c; } catch (e) {}
     let info = null;
@@ -367,14 +370,19 @@ const SUDOKU = {{SUDOKU_DATA}};
       resolvePhoto(fig).then(info => {
         if (!info) return;
         const img = new Image();
-        img.className = 'ph-img'; img.alt = fig.dataset.alt || ''; img.width = info.w; img.height = info.h; img.decoding = 'async';
+        img.className = 'ph-img'; img.alt = fig.dataset.alt || ''; if (info.w) { img.width = info.w; img.height = info.h; } img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
+        img.onload = () => fig.classList.add('ready');
         img.onerror = () => fig.classList.remove('ready');
-        fig.classList.add('ready');
+        if (!info.direct) fig.classList.add('ready');
         img.src = info.src;
         fig.insertBefore(img, fig.firstChild);
         const cap = fig.querySelector('figcaption') || fig.appendChild(document.createElement('figcaption'));
         const cr = document.createElement('span'); cr.className = 'credit';
-        cr.textContent = 'Photo: ' + (info.artist || 'Wikimedia Commons') + (info.lic ? ', ' + info.lic : '') + ', via Wikimedia Commons';
+        if (info.direct) {
+          cr.textContent = 'Image: ' + (info.artist || 'source');
+          if (info.page) { const l = document.createElement('a'); l.href = info.page; l.target = '_blank'; l.rel = 'noopener'; l.textContent = ' · open source ›'; cr.appendChild(l); }
+        } else cr.textContent = 'Photo: ' + (info.artist || 'Wikimedia Commons') + (info.lic ? ', ' + info.lic : '') + ', via Wikimedia Commons';
         cap.appendChild(cr);
       }).catch(() => {});
     }

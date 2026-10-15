@@ -126,21 +126,44 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
 
 ## Photos
 
-Real photos come from Wikimedia Commons and are loaded by Paul's phone when he opens the issue,
-with the photographer and licence credit added automatically. Only free-licence Commons files are
-shown; anything else is skipped silently. Never use photos from Google, news sites or agencies.
+Paul wants LOTS of real images. Every major article and major event gets one, and so does any
+small story that is visual (a protest, a crash, a launch, a new car, a game trailer, a tool UI).
+If you write something that makes the reader want to see it, show it. Never draw charts, maps,
+diagrams or illustrations instead. Images load on Paul's phone when he opens the issue; a figure
+whose image fails stays hidden, so a wrong guess costs nothing but a correct one is gold.
 
+Where to get each kind (in this order):
+1. **News events (protests, disasters, launches, matches):** the lead photo of a news article
+   about that exact event. WebFetch the article with the prompt "Give the exact absolute URL of
+   the article's lead photo (og:image or first photo), its caption and photo credit, verbatim."
+   Good sources: euronews, franceinfo, Le Monde, BBC, Reuters, AP, The Verge, cgchannel. Use it with
+   `data-src`, `data-credit` (the photographer or agency exactly as credited) and `data-link`
+   (the article URL). Skip images described as illustration, stock or AI-generated, and generic
+   site logos or default images (for example `ps-default.png`). The caption must say where and
+   when the photo was taken, from the source caption, never invented.
+2. **Software, tools, plugins, games:** a real screenshot from the official release notes,
+   product page or GitHub release (`https://github.com/user-attachments/assets/<uuid>` is
+   stable; strip the signed `private-user-images` URL down to the uuid). For games, the
+   official store or press page image.
+3. **F1 circuits:** the official layout map from formula1.com. WebFetch
+   `https://www.formula1.com/en/racing/<year>/<race-slug>` and ask for the track map URL (it
+   looks like `.../common/f1/<year>/track/<year>track<name>detailed.webp`). Add class `light`.
+   Drivers, cars and team bosses: the Wikipedia lead image (`data-wiki="en|Driver_Name"`) or a
+   press photo of the actual weekend via route 1.
+4. **People, places, companies (background, not a specific event):** `data-wiki="en|Article"`
+   (`fr|` for French people and places). `data-file="File:..."` for an exact Commons file.
+5. `data-commons="search words"` only as a last resort (hits are often unrelated old events).
+
+Markup:
+- `<figure class="photo blk" data-src="IMAGE_URL" data-credit="AP Photo/Name" data-link="ARTICLE_URL" data-alt="..."><figcaption><b>Place, date.</b> What it shows.</figcaption></figure>`
 - `<figure class="photo blk" data-wiki="en|Article_Title" data-alt="..."><figcaption><b>Title.</b> Text.</figcaption></figure>`
-  uses the lead image of a Wikipedia article (people, places, circuits, companies, games' developers).
-  Prefer `fr|...` for French people and places.
-- `data-commons="search words"` searches Commons and takes the first hit. Last resort only: hits can be unrelated old events (a search for a tanker near Hormuz returned a 2012 US Navy collision). Prefer `data-wiki` (the Wikipedia article's lead image) or an exact `data-file`. Never use a photo of a different event as if it showed today's news; caption file images as file images.
-- `data-file="File:Exact_name.jpg"` for a specific Commons file.
-- Add `portrait` to the class for a small portrait floated beside text.
-ALWAYS use photos. Paul loves them. Aim for one photo per section or more (8 to 14 per daily,
-more in the weekly): the front lead always has one, every section lead has one, plus people in
-the news (politicians, drivers, players, CEOs) as `portrait` floats beside briefs. A file photo is
-fine, say "File photo" in the caption when it is not from today. Never draw charts, maps or
-schematics instead; if no fitting photo exists, use a table or text.
+- Add `portrait` for a small portrait floated beside text (people), `light` for maps or UI
+  screenshots with transparent backgrounds.
+The credit and an "open source" link are added automatically.
+
+Volume: daily 12 to 20 images, weekly 25 or more. Front lead always has one. Every section
+lead has one. Never use a photo of a different event as if it showed today's news; say
+"File photo" in the caption when the image is not of the event itself.
 
 ## sections.html building blocks
 
