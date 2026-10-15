@@ -165,6 +165,14 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .sdk .msg { font-size: 14px; min-height: 20px; margin-top: 6px; color: var(--accent); font-weight: 600; }
 .sources p { font-size: 13.5px; color: var(--muted); }
 .sources p + p { margin-top: 6px; }
+
+/* photos from Wikimedia Commons, loaded on the phone */
+figure.photo { display: none; }
+figure.photo.ready { display: block; }
+.photo .ph-img { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--card); }
+.photo .credit { display: block; font-size: 11.5px; font-style: italic; color: var(--muted); margin-top: 3px; }
+.photo.portrait .ph-img { width: 46%; float: left; margin: 0 12px 6px 0; }
+.photo.portrait::after { content: ""; display: block; clear: both; }
 @media (prefers-reduced-motion: reduce) { #bar i { transition: none; } }
 </style>
 
@@ -287,13 +295,66 @@ const SUDOKU = {{SUDOKU_DATA}};
       p.querySelector('.prev').disabled = idx === 0;
       p.querySelector('.next').disabled = idx === pages.length - 1;
     });
-    document.getElementById('m-swipe').setAttribute('aria-pressed', mode === 'swipe');
-    document.getElementById('m-scroll').setAttribute('aria-pressed', mode === 'scroll');
+    document.getElementById('m-swipe')?.setAttribute('aria-pressed', mode === 'swipe');
+    document.getElementById('m-scroll')?.setAttribute('aria-pressed', mode === 'scroll');
     pages.forEach(p => p.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode)));
     if (keepKey) goTo(keepKey, false);
     onScroll();
+    loadPhotos(reader);
   }
 
+
+  // ---- Photos: resolved on the phone from Wikimedia Commons (free licences only) ----
+  const PHOTO_CACHE = 'tpt-photo-';
+  const strip = h => { const d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); };
+  async function wjson(url) { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); }
+  async function commonsInfo(fileTitle) {
+    const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url|extmetadata|mime&iiurlwidth=900&titles=' + encodeURIComponent(fileTitle);
+    const d = await wjson(u);
+    const p = Object.values(d.query.pages)[0];
+    if (!p || p.missing !== undefined || !p.imageinfo) return null;
+    const ii = p.imageinfo[0];
+    if (!/^image\/(jpeg|png|webp)$/.test(ii.mime || '')) return null;
+    if (!(ii.thumburl || '').includes('/wikipedia/commons/')) return null;
+    const m = ii.extmetadata || {};
+    const lic = strip(m.LicenseShortName && m.LicenseShortName.value);
+    if (/fair use|non-free/i.test(lic)) return null;
+    return { src: ii.thumburl, w: ii.thumbwidth, h: ii.thumbheight, artist: strip(m.Artist && m.Artist.value).slice(0, 60), lic: lic, page: ii.descriptionurl };
+  }
+  async function resolvePhoto(fig) {
+    const key = fig.dataset.file || fig.dataset.wiki || fig.dataset.commons;
+    try { const c = JSON.parse(localStorage.getItem(PHOTO_CACHE + key)); if (c) return c; } catch (e) {}
+    let info = null;
+    if (fig.dataset.file) info = await commonsInfo(fig.dataset.file);
+    else if (fig.dataset.wiki) {
+      const [lang, title] = fig.dataset.wiki.split('|');
+      const d = await wjson('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=name&redirects=1&titles=' + encodeURIComponent(title));
+      const p = Object.values(d.query.pages)[0];
+      if (p && p.pageimage) info = await commonsInfo('File:' + p.pageimage);
+    } else if (fig.dataset.commons) {
+      const d = await wjson('https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&list=search&srnamespace=6&srlimit=6&srsearch=' + encodeURIComponent(fig.dataset.commons + ' filetype:bitmap'));
+      for (const hit of (d.query && d.query.search) || []) { info = await commonsInfo(hit.title); if (info) break; }
+    }
+    if (info) { try { localStorage.setItem(PHOTO_CACHE + key, JSON.stringify(info)); } catch (e) {} }
+    return info;
+  }
+  async function loadPhotos(root) {
+    for (const fig of root.querySelectorAll('figure.photo:not(.done)')) {
+      fig.classList.add('done');
+      resolvePhoto(fig).then(info => {
+        if (!info) return;
+        const img = new Image();
+        img.className = 'ph-img'; img.alt = fig.dataset.alt || ''; img.width = info.w; img.height = info.h; img.loading = 'lazy'; img.decoding = 'async';
+        img.onload = () => fig.classList.add('ready');
+        img.src = info.src;
+        fig.insertBefore(img, fig.firstChild);
+        const cap = fig.querySelector('figcaption') || fig.appendChild(document.createElement('figcaption'));
+        const cr = document.createElement('span'); cr.className = 'credit';
+        cr.textContent = 'Photo: ' + (info.artist || 'Wikimedia Commons') + (info.lic ? ', ' + info.lic : '') + ', via Wikimedia Commons';
+        cap.appendChild(cr);
+      }).catch(() => {});
+    }
+  }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
   function goIdx(i, smooth) { reader.scrollTo({ left: i * reader.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
   function goTo(key, smooth) { const i = pages.findIndex(p => p.dataset.key === key); if (i >= 0) goIdx(i, smooth); }

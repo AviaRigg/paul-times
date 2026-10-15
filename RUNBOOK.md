@@ -77,6 +77,13 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    first-round poll as a `rank` chart, naming pollster, date and sample size, and saying it is a
    snapshot). Strictly neutral: report what each side says, no opinions. French sources first
    (franceinfo, Le Monde, Public Sénat, LCP, Les Echos), cross-checked.
+   Always end the France section with a **"Lisnard watch"** box (David Lisnard, mayor of Cannes,
+   Nouvelle Énergie, is Paul's preferred 2027 candidate): his latest polls (pollster, date, score,
+   change), what he said or did, campaign news, social media momentum, plus a one-line "Reality
+   check" on where he stands against the leaders. Factual, never promotional: include notable
+   criticism of him when there is any. If nothing new happened, say so in one line and repeat the
+   latest poll. Use `<figure class="photo portrait" data-wiki="fr|David_Lisnard" data-alt="David Lisnard"></figure>`
+   at the top of the box.
 4. **local** (`--a-local`): Annecy and Haute-Savoie lead with an illustration or chart, weather box
    for Amsterdam and Annecy (°C, today plus 3 days, rain %), a "Scooter check" line (he rides a
    scooter in Amsterdam), 3 to 4 Annecy briefs, **Dutch word of the day** (word, pronunciation,
@@ -111,6 +118,22 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
   SF-26, AviaRigg, Australia), never forced.
 - Political topics: neutral, factual, no opinions except in the labelled editorial, which must
   present the other side.
+
+## Photos
+
+Real photos come from Wikimedia Commons and are loaded by Paul's phone when he opens the issue,
+with the photographer and licence credit added automatically. Only free-licence Commons files are
+shown; anything else is skipped silently. Never use photos from Google, news sites or agencies.
+
+- `<figure class="photo blk" data-wiki="en|Article_Title" data-alt="..."><figcaption><b>Title.</b> Text.</figcaption></figure>`
+  uses the lead image of a Wikipedia article (people, places, circuits, companies, games' developers).
+  Prefer `fr|...` for French people and places.
+- `data-commons="search words"` searches Commons for a file photo (for example "oil tanker Strait of Hormuz").
+- `data-file="File:Exact_name.jpg"` for a specific Commons file.
+- Add `portrait` to the class for a small portrait floated beside text.
+Use 3 to 6 photos per issue: one on the front lead when a relevant photo exists (a file photo is
+fine, say "File photo" in the caption), plus people in the news (politicians, drivers, players).
+Photos complement the data charts; they never replace a chart that carries numbers.
 
 ## sections.html building blocks
 
