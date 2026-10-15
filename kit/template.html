@@ -36,6 +36,7 @@
   color-scheme: dark; }
 
 html, body { height: 100%; }
+html { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
 #src { display: none; }
 
@@ -261,6 +262,14 @@ const SUDOKU = {{SUDOKU_DATA}};
   addEventListener('orientationchange', () => setTimeout(fit, 300));
   addEventListener('pageshow', fit);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) fit(); });
+  // iOS scrolls the whole page up to show the keyboard and does not always scroll it back; the drawing
+  // then sits above the tap targets. Snap the page back whenever no text field is being edited.
+  const typing = () => { const e = document.activeElement; return e && (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA'); };
+  const resetScroll = () => { if (!typing() && (window.scrollY || window.scrollX || document.documentElement.scrollTop)) { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } };
+  addEventListener('scroll', resetScroll, { passive: true });
+  document.addEventListener('focusout', () => { setTimeout(resetScroll, 60); setTimeout(resetScroll, 400); });
+  if (window.visualViewport) { visualViewport.addEventListener('resize', () => setTimeout(resetScroll, 60)); visualViewport.addEventListener('scroll', () => setTimeout(resetScroll, 60)); }
+  document.addEventListener('touchstart', resetScroll, { passive: true });
   const reader = document.getElementById('reader');
   const barFill = document.querySelector('#bar i');
   const src = [...document.querySelectorAll('#src > section')];
