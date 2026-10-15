@@ -167,6 +167,28 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .sources p + p { margin-top: 6px; }
 
 /* photos from Wikimedia Commons, loaded on the phone */
+/* live weather */
+.wxl .live { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 10px; }
+.wxl .verdict { padding: 10px 12px; margin-bottom: 10px; border: 2px solid var(--ink); }
+.wxl .verdict.yes { background: var(--ink); color: var(--bg); }
+.wxl .verdict.no { border-color: var(--up); }
+.wxl .verdict .v { font-family: var(--display); font-size: 25px; font-weight: 700; line-height: 1.15; }
+.wxl .verdict.no .v { color: var(--up); }
+.wxl .verdict .why { font-size: 15px; margin-top: 4px; line-height: 1.35; }
+.wxl .now { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.wxl .now .t { font-family: var(--display); font-size: 40px; line-height: 1; }
+.wxl .now .d { font-size: 15px; color: var(--muted); font-style: italic; }
+.wxl ul.facts { list-style: none; padding: 0; margin: 0 0 10px; font-size: 15px; }
+.wxl ul.facts li { padding: 4px 0; border-bottom: 1px solid var(--rule); }
+.wxl .hours { display: grid; grid-template-columns: repeat(6, 1fr); text-align: center; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); margin-bottom: 10px; }
+.wxl .hours div { padding: 6px 0; font-size: 13px; line-height: 1.35; }
+.wxl .hours .h { font-size: 11px; color: var(--muted); }
+.wxl .hours .s { font-size: 19px; display: block; }
+.wxl .hours .p { font-weight: 700; }
+.wxl .hours .p.wet { color: var(--down); }
+.wxl h5 { font-family: var(--display); font-size: 17px; margin: 10px 0 2px; }
+.wxl table td { font-size: 14px; padding: 4px 3px; }
+.wxl .wet { color: var(--down); font-weight: 700; }
 figure.photo { display: none; }
 figure.photo.ready { display: block; }
 .photo .ph-img { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--card); }
@@ -301,6 +323,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     if (keepKey) goTo(keepKey, false);
     onScroll();
     loadPhotos(reader);
+    loadWeather(reader);
   }
 
 
@@ -355,6 +378,102 @@ const SUDOKU = {{SUDOKU_DATA}};
         cap.appendChild(cr);
       }).catch(() => {});
     }
+  }
+  // ---------- live weather (Open-Meteo, fetched on the phone when the issue opens) ----------
+  const WX_URL = 'https://api.open-meteo.com/v1/forecast?latitude=52.3676,45.8992&longitude=4.9041,6.1294'
+    + '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m'
+    + '&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_gusts_10m'
+    + '&daily=weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,sunset'
+    + '&timezone=Europe%2FAmsterdam&forecast_days=5&wind_speed_unit=kmh';
+  let wxCache = null;
+  function wxSym(c) {
+    if (c === 0) return ['☀️', 'clear']; if (c <= 2) return ['🌤️', 'partly cloudy']; if (c === 3) return ['☁️', 'cloudy'];
+    if (c === 45 || c === 48) return ['🌫️', 'fog']; if (c >= 51 && c <= 57) return ['🌦️', 'drizzle'];
+    if (c >= 61 && c <= 67) return ['🌧️', 'rain']; if (c >= 71 && c <= 77) return ['❄️', 'snow'];
+    if (c >= 80 && c <= 82) return ['🌦️', 'showers']; if (c === 85 || c === 86) return ['🌨️', 'snow showers'];
+    if (c >= 95) return ['⛈️', 'thunderstorms']; return ['☁️', ''];
+  }
+  const hh = iso => iso.slice(11, 16);
+  const dayName = iso => new Date(iso + 'T12:00').toLocaleDateString('en-GB', { weekday: 'short' });
+  function wxCity(d) {
+    // window: from the current hour to 23:00; after 21:00 switch to tomorrow 07:00 to 23:00
+    const nowIso = d.current.time.slice(0, 13);
+    const today = d.current.time.slice(0, 10);
+    let dayIdx = 0, startH = Math.max(7, +nowIso.slice(11, 13));
+    if (+nowIso.slice(11, 13) >= 21) { dayIdx = 1; startH = 7; }
+    const day = d.daily.time[dayIdx];
+    const H = d.hourly, idx = [];
+    H.time.forEach((t, i) => { if (t.slice(0, 10) === day && +t.slice(11, 13) >= startH && +t.slice(11, 13) <= 23) idx.push(i); });
+    return { d, day, dayIdx, idx, tomorrow: dayIdx === 1, today };
+  }
+  function wxVerdict(c) {
+    const H = c.d.hourly, I = c.idx;
+    const wet = I.filter(i => H.precipitation_probability[i] >= 50 && H.precipitation[i] >= 0.2);
+    const mm = I.reduce((a, i) => a + H.precipitation[i], 0);
+    const maxP = Math.max(0, ...I.map(i => H.precipitation_probability[i]));
+    const peak = I.reduce((b, i) => H.precipitation_probability[i] > H.precipitation_probability[b] ? i : b, I[0]);
+    const when = c.tomorrow ? 'tomorrow' : 'today';
+    if (wet.length || mm >= 1) {
+      const from = hh(H.time[(wet[0] ?? peak)]), to = hh(H.time[(wet[wet.length - 1] ?? peak)]);
+      return { cls: 'yes', v: '☂ Rain gear: YES', why: `Rain likely ${when} ${from === to ? 'around ' + from : 'from ' + from + ' to ' + (+to.slice(0, 2) + 1).toString().padStart(2, '0') + ':00'}, about ${mm.toFixed(1)} mm in total (peak ${maxP}%).` };
+    }
+    if (maxP >= 30 || mm >= 0.2) return { cls: 'maybe', v: '☂ Pack it, just in case', why: `Mostly dry ${when}, but a shower is possible around ${hh(H.time[peak])} (${maxP}%).` };
+    return { cls: 'no', v: 'No rain gear needed', why: `Dry ${when}: rain chance never above ${maxP}%.` };
+  }
+  function wxWear(c) {
+    const H = c.d.hourly; const lo = Math.min(...c.idx.map(i => H.apparent_temperature[i]));
+    if (lo <= 3) return 'Thermal layer, warm jacket and gloves';
+    if (lo <= 9) return 'Warm jacket, gloves on the scooter';
+    if (lo <= 15) return 'Jacket';
+    if (lo <= 21) return 'Light jacket or hoodie';
+    return 'T-shirt weather';
+  }
+  function wxRender(el, all) {
+    const ams = wxCity(all[0]), ann = wxCity(all[1]);
+    const A = all[0], H = A.hourly, D = A.daily, v = wxVerdict(ams);
+    const gust = Math.max(...ams.idx.map(i => H.wind_gusts_10m[i]));
+    const lo = Math.min(...ams.idx.map(i => H.apparent_temperature[i])), hi = Math.max(...ams.idx.map(i => H.temperature_2m[i]));
+    const windTxt = gust >= 60 ? `<b>Strong gusts up to ${Math.round(gust)} km/h.</b> Slow down on bridges and open roads.` : gust >= 40 ? `Gusty, up to ${Math.round(gust)} km/h. Hold the bars on bridges.` : `Light wind, gusts up to ${Math.round(gust)} km/h.`;
+    const step = Math.max(1, Math.ceil(ams.idx.length / 6));
+    const cells = ams.idx.filter((_, k) => k % step === 0).slice(0, 6).map(i => {
+      const p = H.precipitation_probability[i];
+      return `<div><span class="h">${hh(H.time[i])}</span><span class="s">${wxSym(H.weather_code[i])[0]}</span>${Math.round(H.temperature_2m[i])}°<br><span class="p${p >= 50 ? ' wet' : ''}">${p}%</span></div>`;
+    }).join('');
+    const days = (X, from) => [1, 2, 3].map(k => k + from).filter(k => k < X.daily.time.length).map(k => {
+      const p = X.daily.precipitation_probability_max[k], mm = X.daily.precipitation_sum[k];
+      return `<tr><td>${dayName(X.daily.time[k])}</td><td>${wxSym(X.daily.weather_code[k])[0]}</td><td>${Math.round(X.daily.temperature_2m_min[k])}°/${Math.round(X.daily.temperature_2m_max[k])}°</td><td class="r${p >= 50 ? ' wet' : ''}">${p}%</td><td class="r">${mm.toFixed(1)} mm</td><td class="r">${Math.round(X.daily.wind_gusts_10m_max[k])} km/h</td></tr>`;
+    }).join('');
+    const nowS = wxSym(A.current.weather_code);
+    const B = all[1], bS = wxSym(B.current.weather_code), bi = ann.dayIdx;
+    const upd = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    el.innerHTML = `<div class="live"><span>Weather · live</span><span>updated ${upd}</span></div>
+      <h5 style="margin-top:0">Amsterdam ${ams.tomorrow ? '· tomorrow' : '· today'}</h5>
+      <div class="verdict ${v.cls}"><div class="v">${v.v}</div><div class="why">${v.why}</div></div>
+      <div class="now"><span class="t">${Math.round(A.current.temperature_2m)}°C</span><span class="d">now, ${nowS[1]}, feels ${Math.round(A.current.apparent_temperature)}°</span></div>
+      <ul class="facts">
+        <li><b>Range:</b> feels ${Math.round(lo)}° at worst, up to ${Math.round(hi)}°</li>
+        <li><b>Wear:</b> ${wxWear(ams)}</li>
+        <li><b>Wind:</b> ${windTxt}</li>
+        <li><b>Dark from:</b> ${hh(D.sunset[ams.dayIdx])}</li>
+      </ul>
+      <div class="hours">${cells}</div>
+      <div class="tbl"><table>${days(A, ams.dayIdx)}</table></div>
+      <h5>Annecy</h5>
+      <p class="small" style="margin:0 0 4px">${bS[0]} ${Math.round(B.current.temperature_2m)}°C now, ${bS[1]}. ${ann.tomorrow ? 'Tomorrow' : 'Today'} ${Math.round(B.daily.temperature_2m_min[bi])}° to ${Math.round(B.daily.temperature_2m_max[bi])}°, rain ${B.daily.precipitation_probability_max[bi]}%.</p>
+      <div class="tbl"><table>${days(B, bi)}</table></div>
+      <p class="note" style="margin-top:6px">Live forecast from Open-Meteo, refreshed every time you open the issue.</p>`;
+  }
+  async function loadWeather(root) {
+    const els = root.querySelectorAll('[data-wx]:not(.done)');
+    if (!els.length) return;
+    els.forEach(e => e.classList.add('done'));
+    try {
+      if (!wxCache || Date.now() - wxCache.t > 600000) {
+        const r = await fetch(WX_URL); if (!r.ok) throw 0;
+        wxCache = { t: Date.now(), d: await r.json() };
+      }
+      els.forEach(e => wxRender(e, wxCache.d));
+    } catch (e) { /* keep the printed forecast */ }
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
   function goIdx(i, smooth) { reader.scrollTo({ left: i * reader.clientWidth, behavior: smooth === false ? 'auto' : 'smooth' }); }
