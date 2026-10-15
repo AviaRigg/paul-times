@@ -11,7 +11,7 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
 
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
-| Daily | Mon to Sat, 07:00 Amsterdam | `YYYY-MM-DD` | last 24 hours | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
+| Daily | Mon to Sat, starts 03:30, ready by 04:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
 | Weekly | Sunday, 09:00 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | 10 section pages, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
 
 ## Steps
