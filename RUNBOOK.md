@@ -185,6 +185,24 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
      logos and title cards are skipped). Unreleased films often have no Wikipedia poster yet: then
      find the official poster in a news article or studio page (WebFetch, ask for the og:image or
      poster URL) and add `data-src="<url>"`. A film with nothing gets a coloured title tile.
+   **Trailer and info overlay** (Paul taps a Coming soon poster or a pick and gets a full-screen
+   sheet with poster, facts, synopsis and the trailer playing inside the paper; the code is
+   `docs/screen-overlay.js`, nothing to build). Feed it for EVERY Coming soon poster and EVERY pick:
+   - Trailer: a YouTube video id (the 11 characters after `v=`). WebSearch "<title> <year> official
+     trailer youtube"; prefer the studio's or streamer's official channel (Disney, Pixar, Netflix,
+     Marvel, Sony Pictures, Universal, Pathé, Gaumont...), the latest main trailer, the English
+     original version (French films: the French trailer). Verify it with WebFetch of
+     `https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=<id>`:
+     a title and author means OK; 401 means embedding is disabled (find another official upload);
+     404 means wrong id. Never invent an id; if none is found, leave it out and the sheet offers a
+     YouTube search button instead.
+   - Synopsis: 2 to 3 sentences of your own, no spoilers beyond the first act.
+   - Poster markup: add `data-yt="<id>" data-about="<synopsis>" data-meta="Animation · Pixar · 1h 42"
+     data-where="Pathé Tuschinski and Vue, original version"` (for streaming: the platform and time).
+     Runtime only when announced.
+   - Picks: add `"yt": "<id>", "about": "<synopsis>"` to each pick object.
+   Without `about`, the sheet fetches a summary live (TVmaze for `tv|`, otherwise Wikipedia), so
+   always keep a good `data-pwiki` / `"wiki"` too.
    Photos: posters, stills and trailer frames from studio pages or news articles (route 1 or 2 in
    Photos). Weekly edition: add the week's box office top 5 (worldwide) and all trailers released.
 11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
