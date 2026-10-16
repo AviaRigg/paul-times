@@ -7,12 +7,33 @@ morning. Everything it needs is in this repo; it has no memory of earlier sessio
 Reader: Paul Chedozeau, rigging student and 3D artist (Maya 2026), delivery driver, lives in
 Amsterdam, from Annecy, plans to move to Australia in May 2027.
 
+What the paper is: Paul's full daily newspaper, his main source of news. It is NOT a quick
+pre-shift digest. He reads it across the whole day: before, during and after his shift. Length is
+not a constraint; depth and completeness are the point. Never trim a section to make it shorter.
+He reads at a high level: write everything for an informed, expert reader, with no beginner
+explanations anywhere in the paper.
+
 ## Editions
 
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
-| Daily | Mon to Sat, starts 03:30, ready by 04:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
-| Weekly | Sunday, 09:00 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | 10 section pages, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+| Daily | Mon to Sat, starts about 03:00, done before 07:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
+| Weekly | Sunday, starts about 08:20 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | same 12 pages and layout as the daily, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+
+**Timing.** There is no 04:00 deadline. The daily run starts around 03:00 and the whole issue must
+be published before 07:00. Order of work: build and publish the core paper first (all 12 sections,
+photos, portfolio, sudokus), then add the tap-for-more templates and trailer ids, rebuild and
+publish again. It is fine if that second pass finishes later, as long as everything is live
+before 07:00.
+
+**The weekly** follows exactly the same layout, sections, blocks and rules as the daily. No charts
+and no `charts.json`, ever. Differences: it covers the last 7 days, the stories go deeper, it adds
+a "Week in numbers" box and the week's best moments per section, and it has 4 sudokus.
+
+**Sudoku placement.** The section named for each sudoku below is only a default. Place the
+sudokus (`data-sudoku="0"`, `"1"`, and in the weekly `"2"`, `"3"`) in different sections chosen at
+random each issue, at a natural break between blocks, so Paul comes across them while reading.
+Never two in the same section.
 
 ## Steps
 
@@ -78,7 +99,9 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
 
 Each section is a `<section data-key data-title data-accent>` in `sections.html`. The big number in each section opener is its position (World 2, France 3, Local 4 ... Sport 9, Screen 10, Week 11, Back Page 12).
 
-1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1), two teasers
+1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1; tagline exactly
+   "Your daily paper, from the first coffee to the last parcel", replacing the old "All the news a
+   rigger needs, before the first shift"), two teasers
    (`data-goto` a section key), lead headline + dek, a big lead PHOTO, In brief, 2 paragraphs,
    a "Continued in <section>" jump, "The day in five lines", **Number of the day**, contents
    (`#toc`, filled automatically).
@@ -86,6 +109,8 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    section**, not automatically world news. Examples: "GTA 6 is out today", "Hamilton on pole
    in Austin", "Antonelli is world champion", a big French political crisis, a market crash
    that hits his ETFs, a major Maya or rigging release, or a war when it truly dominates.
+   Teaser kickers name the topic as a reader would ("Formula 1", "France", "Markets"), never
+   "SF-26": that is also the name of Paul's own rig project, so a Ferrari story is "Formula 1".
    The front kicker names the section (for example "Breaking · Formula 1"), the "Continued in"
    jump points to that section, and the lead photo matches the story: the driver or circuit
    for F1, the game's studio or franchise for games, the place for world events, the
@@ -107,7 +132,8 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    criticism of him when there is any. If nothing new happened, say so in one line and repeat the
    latest poll. Use `<figure class="photo portrait" data-wiki="fr|David_Lisnard" data-alt="David Lisnard"></figure>`
    at the top of the box.
-4. **local** (`--a-local`): Annecy and Haute-Savoie lead with a photo of the place, the live weather box
+4. **local** (`--a-local`): full Annecy and Haute-Savoie coverage, including the small local stories
+   (police, firefighters, council, sport, events): Paul wants them all, they are not filler. Annecy and Haute-Savoie lead with a photo of the place, the live weather box
    (step 4), 3 to 4 Annecy briefs, **Dutch word of the day** (word, pronunciation,
    example sentence, bonus phrase; useful for a delivery driver).
 5. **markets** (`--a-markets`): lead on the main market story with a photo (company, exchange or
@@ -136,8 +162,23 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    when a news article has one. Weekly edition: three of them.
 
 8. **craft** (`--a-craft`): 3D animation, rigging (top priority), 3D software (Maya, Blender,
-   Houdini, ZBrush, Unreal), video games. **Tool of the week** (inverted box), **Rigging job board**
-   (real openings with studio and location; say so if there are none), **Australia corner**
+   Houdini, ZBrush, Unreal), video games. Rigging is the heart of this section and gets the most
+   space; write it for a strong professional rigger, never beginner material.
+   **Tool of the week** (inverted box).
+   **Rigging job board**: a real, substantial board, as many current rigging, character TD, CFX
+   and creature/vehicle rigging openings as you can find worldwide (aim for 8 or more; Australia and
+   Europe first), each with studio, role, location or remote, level, and a direct "Apply" link to
+   the studio's own posting or ATS page (Greenhouse, Lever, Workday, the studio careers page;
+   aggregators only if there is no direct page). Verify EVERY apply link before it goes in:
+   `curl -sL -o /dev/null -m 20 -w '%{http_code}' "<url>"` must return 200, and a WebFetch of the
+   page must confirm the role is still open. Drop any listing that fails; never publish an
+   unverified link. Markup: `<a class="apply" href="URL">Apply ›</a>` on each listing. If the
+   network blocks the check (`000`), confirm with WebFetch instead.
+   **Riggers to follow**: notable recent posts and work from the rigging community (LinkedIn
+   posts, ArtStation and Vimeo breakdowns, rigging reels, GitHub tools, talks, techniques under
+   discussion), 3 to 5 items, each with who, what is technically interesting about it, and a link.
+   Only real, findable posts; never invent one.
+   (Say so plainly if there are no new openings or posts rather than padding.) **Australia corner**
    (visas, VFX and animation hiring in Australia). Photos: studios, software makers, games.
    **Your games** box: Paul plays GTA 6, Valorant, Fortnite, Cities: Skylines II, the F1 game
    (EA's current edition, any year) and Clash of Clans. Every day check each one for patch notes,
@@ -208,7 +249,11 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
 11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
    editorial (one opinion piece on the top story, ending with the opposing view), Sudoku No. 2
    (`data-sudoku="1"`). Weekly: put Sudoku 3 and 4 here too.
-12. **back** (`--a-back`): starts with **Yesterday, checked** and **Corrections** (below), then **Rigging tip of the day** (Maya 2026, practical, with a short
+12. **back** (`--a-back`): starts with **Yesterday, checked** and **Corrections** (below), then **Rigging tip of the day** (Maya 2026, ADVANCED: assume a strong rigger who knows the
+    basics cold; no "lock and hide attributes" level tips. Think matrix-based rigging,
+    offsetParentMatrix, node-based math, deformer stacks and weights tooling, performance and
+    parallel evaluation, component and modular builds, Maya 2026 features, pipeline and API.
+    Never repeat a tip from the last 60 issues; practical, with a short
     `maya.cmds` snippet that actually works), sources by section, "Past issues" link, footer note, and always ends with
     the feedback box `<div class="feedback blk" data-feedback></div>`.
 
@@ -329,8 +374,11 @@ like "jeudi 15 octobre". The app's buttons switch language by themselves.
 ## Accountability: claims, checks and corrections
 
 1. **Claims.** At the very end of every `sections.html`, after the last `</section>`, list 3 to 6
-   checkable claims this issue makes about the future or about figures that could be revised
-   (a vote date, a release date, a predicted result, a poll number, a price level):
+   checkable claims this issue makes about the future or about figures that could be revised.
+   They must bet on genuinely uncertain outcomes that could turn out wrong (a vote result, who
+   wins a race or match, whether a poll moves, whether a price ends above a level, whether a
+   delay or deal happens), not near-certain scheduled events (an episode airing on its listed
+   date, a meeting taking place). Each must be specific enough to settle with one source:
    `<script type="application/json" class="claims-out">[{"id":"<issue id>-1","text":"Lecornu's budget revenue vote happens on Tue 20 Oct","due":"2026-10-21"}]</script>`
 2. **Yesterday, checked.** Unlock the previous issues (last 14) and collect claims whose `due` is
    today or earlier and that were not yet given a final verdict. Check each against today's news
