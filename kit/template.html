@@ -45,8 +45,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 #app { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; display: flex; flex-direction: column; box-sizing: border-box; padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
 #bar { position: relative; flex: none; height: 3px; background: var(--rule); }
 #bar { touch-action: none; cursor: pointer; z-index: 5; -webkit-user-select: none; user-select: none; }
-#bar::after { content: ""; position: absolute; left: 0; right: 0; top: -16px; bottom: -18px; }
-#bar i { transform-origin: top; }
+#bar::after { content: ""; position: absolute; left: 0; right: 0; top: -22px; bottom: -4px; }
+#bar i { transform-origin: bottom; }
 #bar.scrub i { transform: scaleY(3); transition: none; }
 #bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--accent); transition: background .25s; }
 #reader { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
@@ -57,7 +57,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--b
 .ph .where { color: var(--accent); font-weight: 700; white-space: nowrap; }
 .pb { flex: 1; min-height: 0; overflow: hidden; padding: 14px max(18px, env(safe-area-inset-right, 0px)) 8px max(18px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .pb.overflow, .mode-scroll .pb { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.pf { flex: none; display: flex; justify-content: space-between; align-items: center; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
+.pf { flex: none; border-top: 0 !important; display: flex; justify-content: space-between; align-items: center; padding: 6px max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px)); font-size: 12px; color: var(--muted); border-top: 1px solid var(--rule); }
 .pf button { font: inherit; color: var(--accent); background: none; border: 0; padding: 6px 4px; cursor: pointer; font-weight: 700; letter-spacing: .06em; }
 .pf button:disabled { color: var(--rule); }
 .pf .num { font-family: var(--display); font-size: 14px; color: var(--ink); }
@@ -257,8 +257,8 @@ figure.photo.ready { display: block; }
 
 </head><body>
 <div id="app">
-<div id="bar" aria-hidden="true"><i></i></div>
 <main id="reader" aria-label="The Paul Times, swipe left for the next page"></main>
+<div id="bar" aria-hidden="true"><i></i></div>
 <footer class="pf" id="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="num"></span><button class="next" aria-label="Next page">Next ›</button></footer>
 </div>
 
