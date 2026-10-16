@@ -248,7 +248,7 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    Photos). Weekly edition: add the week's box office top 5 (worldwide) and all trailers released.
 11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
    editorial (one opinion piece on the top story, ending with the opposing view), Sudoku No. 2
-   (`data-sudoku="1"`). Weekly: put Sudoku 3 and 4 here too.
+   (`data-sudoku="1"`). Weekly: Sudoku 3 and 4 also go in (random sections, see Sudoku placement).
 12. **back** (`--a-back`): starts with **Yesterday, checked** and **Corrections** (below), then **Rigging tip of the day** (Maya 2026, ADVANCED: assume a strong rigger who knows the
     basics cold; no "lock and hide attributes" level tips. Think matrix-based rigging,
     offsetParentMatrix, node-based math, deformer stacks and weights tooling, performance and
