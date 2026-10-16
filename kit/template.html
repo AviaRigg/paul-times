@@ -749,10 +749,11 @@ document.documentElement.lang = FR ? 'fr' : 'en';
     root.querySelectorAll('[data-feedback]').forEach(renderFeedback);
   }
   function current() { return Math.round(reader.scrollLeft / Math.max(1, reader.clientWidth)); }
-  let glideRaf = 0;
+  let glideRaf = 0, gliding = false, glideTarget = 0;
   function glideTo(left, ms) {
     // Own easing instead of the browser's: iOS often ignores smooth scrolling on snap containers.
-    cancelAnimationFrame(glideRaf);
+    cancelAnimationFrame(glideRaf); gliding = false;
+    glideTarget = left;
     const from = reader.scrollLeft, d = left - from; if (Math.abs(d) < 1) { reader.scrollLeft = left; return; }
     const dur = ms || Math.min(650, 260 + Math.abs(d) / reader.clientWidth * 45);
     reader.style.scrollSnapType = 'none'; reader.style.scrollBehavior = 'auto';
@@ -761,9 +762,9 @@ document.documentElement.lang = FR ? 'fr' : 'en';
       const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
       reader.scrollLeft = from + d * e;
       if (k < 1) glideRaf = requestAnimationFrame(step);
-      else { reader.scrollLeft = left; reader.style.scrollSnapType = ''; reader.style.scrollBehavior = ''; }
+      else { reader.scrollLeft = left; reader.style.scrollSnapType = ''; reader.style.scrollBehavior = ''; gliding = false; queueSettle(); }
     };
-    glideRaf = requestAnimationFrame(step);
+    gliding = true; glideRaf = requestAnimationFrame(step);
   }
   function goIdx(i, smooth) {
     i = Math.max(0, Math.min(pages.length - 1, i));
@@ -784,7 +785,7 @@ document.documentElement.lang = FR ? 'fr' : 'en';
     reader.scrollLeft = scrubPos;
   }
   bar.addEventListener('pointerdown', e => {
-    cancelAnimationFrame(glideRaf); scrub = true; bar.classList.add('scrub');
+    cancelAnimationFrame(glideRaf); gliding = false; scrub = true; bar.classList.add('scrub');
     reader.style.scrollSnapType = 'none'; reader.style.scrollBehavior = 'auto';
     scrubX0 = e.clientX; scrubL0 = scrubPos = reader.scrollLeft;
     try { bar.setPointerCapture(e.pointerId); } catch (_) {}
@@ -792,7 +793,7 @@ document.documentElement.lang = FR ? 'fr' : 'en';
   });
   bar.addEventListener('pointermove', e => { if (scrub) { scrubAt(e.clientX); e.preventDefault(); } });
   const scrubEnd = () => {
-    if (!scrub) return; scrub = false; bar.classList.remove('scrub');
+    if (!scrub) return; scrub = false; bar.classList.remove('scrub'); reader.style.scrollSnapType = '';
     const i = Math.round(scrubPos / reader.clientWidth);
     glideTo(i * reader.clientWidth, 260);   // glide onto the nearest page
   };
@@ -809,8 +810,23 @@ document.documentElement.lang = FR ? 'fr' : 'en';
   }
 
   reader.addEventListener('scroll', () => requestAnimationFrame(onScroll), { passive: true });
-  pfPrev.onclick = () => goIdx(current() - 1);
-  pfNext.onclick = () => goIdx(current() + 1);
+  // Always come to rest exactly on a page: when scrolling stops (finger up, no glide, no scrub)
+  // and we are between pages, glide to the nearest one. iOS does not always re-snap on its own.
+  let touching = false, settleT = 0;
+  reader.addEventListener('touchstart', () => { touching = true; cancelAnimationFrame(glideRaf); gliding = false; reader.style.scrollSnapType = ''; reader.style.scrollBehavior = ''; }, { passive: true });
+  reader.addEventListener('touchend', () => { touching = false; queueSettle(); }, { passive: true });
+  reader.addEventListener('touchcancel', () => { touching = false; queueSettle(); }, { passive: true });
+  reader.addEventListener('scroll', queueSettle, { passive: true });
+  function queueSettle() { clearTimeout(settleT); settleT = setTimeout(settle, 140); }
+  function settle() {
+    if (touching || scrub || gliding) return;
+    const w = reader.clientWidth; if (!w) return;
+    const off = reader.scrollLeft % w;
+    if (off > 1 && off < w - 1) glideTo(Math.round(reader.scrollLeft / w) * w, 220);
+  }
+  const here = () => gliding ? Math.round(glideTarget / Math.max(1, reader.clientWidth)) : current();
+  pfPrev.onclick = () => goIdx(here() - 1);
+  pfNext.onclick = () => goIdx(here() + 1);
   pfNum.onclick = e => { const n = pfNum; n._c = (n._c || 0) + 1; clearTimeout(n._t); n._t = setTimeout(() => { n._c = 0; }, 700); if (n._c < 3) return; n._c = 0; n.textContent = 'ih ' + innerHeight + ' vv ' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + ' sc ' + screen.height + ' app ' + app.offsetHeight + ' y ' + Math.round(scrollY); };
   reader.addEventListener('click', e => {
     const t = e.target.closest('button');
