@@ -112,11 +112,27 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    person), index-moves table (green up, red down), "Other markets" table (AEX, CAC 40, EUR/USD,
    gold, Brent, US 10-year), then "Your portfolio": Revolut table with weight and target
    columns, eToro table, Straight talk.
+   **Stock of the day** (after the market tables, before "Your portfolio"): one company that is
+   being talked about today (big move, earnings, news, hype) or a mega cap worth knowing, whether
+   or not Paul owns it. Rotate: never the same company twice in 30 days. Include a photo (logo-free:
+   HQ, product, CEO). Content: what the company does in two lines; why it is in the news today;
+   key numbers from a reliable source (share price and currency, market cap, 1-year change,
+   P/E or "loss-making", revenue growth); the bull case and the bear case in one or two lines each;
+   "Your overlap": whether he already holds it through his ETFs or eToro traders (e.g. Nvidia sits
+   inside EQQB and SEC0); and what to watch next (earnings date, product launch). Neutral: no buy or
+   sell call in the paper, end with "Information, not financial advice."
+
 6. **crypto** (`--a-crypto`): bitcoin lead with a photo, price table (with 24 h and 7 d change) (BTC, ETH, SOL,
    XRP, USDT, USDC), briefs on stablecoins, CBDCs (digital euro etc.), US and EU regulation,
    governments and bitcoin. Sudoku No. 1 (`<div class="sdk blk" data-sudoku="0"></div>`).
 7. **tech** (`--a-tech`): AI lead with a photo (company, product or person), pull quote, tech and AI briefs, **Quote of the day**
    (real, correctly attributed, ideally public domain; tie it to rigging or craft in one line).
+   **Radar** box: one new startup or emerging technology per day (a fresh funding round, a launch,
+   a lab breakthrough, a new device), worldwide. What it is, who is behind it, money raised and
+   from whom, why it could matter, and the sceptic's view in one line. Prefer things that are
+   genuinely new over big-company news already covered above; photo of the product or founders
+   when a news article has one. Weekly edition: three of them.
+
 8. **craft** (`--a-craft`): 3D animation, rigging (top priority), 3D software (Maya, Blender,
    Houdini, ZBrush, Unreal), video games. **Tool of the week** (inverted box), **Rigging job board**
    (real openings with studio and location; say so if there are none), **Australia corner**
