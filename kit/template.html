@@ -164,9 +164,21 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .grid > :nth-child(9n+3), .grid > :nth-child(9n+6) { border-right: 2.5px solid var(--ink); }
 .grid > :nth-child(n+19):nth-child(-n+27), .grid > :nth-child(n+46):nth-child(-n+54) { border-bottom: 2.5px solid var(--ink); }
 .grid .g { font-weight: 700; color: var(--ink); background: var(--card); }
-.grid input { width: 100%; height: 100%; border: 0; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: transparent; text-align: center; font: inherit; color: var(--accent); padding: 0; border-radius: 0; caret-color: var(--accent); }
-.grid input:focus { outline: none; background: color-mix(in srgb, var(--accent) 16%, transparent); }
-.grid input.bad { color: var(--down); background: color-mix(in srgb, var(--down) 14%, transparent); }
+.grid .c { all: unset; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); box-sizing: border-box; min-width: 0; color: var(--accent); cursor: pointer; position: relative; }
+.grid > .c:nth-child(9n+3), .grid > .c:nth-child(9n+6) { border-right: 2.5px solid var(--ink); }
+.grid > .c:nth-child(n+19):nth-child(-n+27), .grid > .c:nth-child(n+46):nth-child(-n+54) { border-bottom: 2.5px solid var(--ink); }
+.grid .c.peer { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.grid .g.same, .grid .c.same { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.grid .c.sel { background: color-mix(in srgb, var(--accent) 30%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
+.grid .c.bad { color: var(--down); background: color-mix(in srgb, var(--down) 14%, transparent); }
+.grid .nt { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; height: 100%; font-family: var(--body); font-size: clamp(8px, 2.4vw, 10.5px); line-height: 1; color: var(--muted); }
+.grid .nt i { font-style: normal; display: flex; align-items: center; justify-content: center; }
+.sdk .pad { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; width: min(100%, 360px); margin: 0 auto 8px; }
+.sdk .pad button { font-family: var(--display); font-size: 20px; font-weight: 700; padding: 8px 0; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 4px; }
+.sdk .pad2 { display: flex; gap: 6px; justify-content: center; margin-bottom: 8px; }
+.sdk .pad2 button { font: inherit; font-size: 14px; font-weight: 700; padding: 8px 14px; border: 1.5px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 4px; }
+.sdk .pad2 button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.sdk.notes .pad button { color: var(--accent); font-family: var(--body); font-weight: 400; font-size: 16px; }
 .sdk .btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .sdk .btns button { font: inherit; font-size: 14px; padding: 7px 12px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); cursor: pointer; }
 .sdk .msg { font-size: 14px; min-height: 20px; margin-top: 6px; color: var(--accent); font-weight: 600; }
@@ -364,22 +376,27 @@ document.documentElement.lang = FR ? 'fr' : 'en';
 
   function renderSudoku(el) {
     const i = +el.dataset.sudoku, d = SUDOKU[i], st = sstate[i] || (sstate[i] = {});
-    el.innerHTML = '<div class="kicker">Puzzle break</div><div class="tt">Sudoku No. ' + (i + 1) + ' · ' + d.label + '</div><div class="note">Tap a square, type 1 to 9.</div>';
+    el.innerHTML = '<div class="kicker">' + L('Puzzle break', 'La pause') + '</div><div class="tt">Sudoku No. ' + (i + 1) + ' · ' + d.label + '</div><div class="note">' + L('Tap a square, then a number. Notes: switch on ✎ and tap several numbers.', 'Touche une case, puis un chiffre. Notes : active ✎ et touche plusieurs chiffres.') + '</div>';
     const g = document.createElement('div');
     g.className = 'grid';
     d.puzzle.forEach((row, r) => row.forEach((v, c) => {
       const k = r * 9 + c;
-      if (v) { const s = document.createElement('div'); s.className = 'g'; s.textContent = v; g.appendChild(s); }
-      else {
-        const inp = document.createElement('input');
-        inp.id = 'sdk' + i + '-' + k; inp.inputMode = 'numeric'; inp.maxLength = 1; inp.autocomplete = 'off';
-        inp.setAttribute('aria-label', 'Row ' + (r + 1) + ' column ' + (c + 1));
-        inp.dataset.s = i; inp.dataset.k = k;
-        if (st[k]) inp.value = st[k];
-        g.appendChild(inp);
-      }
+      if (v) { const s = document.createElement('div'); s.className = 'g'; s.textContent = v; s.dataset.k = k; s.dataset.v = v; g.appendChild(s); }
+      else { const b = document.createElement('button'); b.className = 'c'; b.dataset.k = k; b.setAttribute('aria-label', 'Row ' + (r + 1) + ' column ' + (c + 1)); g.appendChild(b); }
     }));
     el.appendChild(g);
+    const pad = document.createElement('div'); pad.className = 'pad';
+    pad.innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => '<button data-n="' + n + '">' + n + '</button>').join('');
+    el.appendChild(pad);
+    const pad2 = document.createElement('div'); pad2.className = 'pad2';
+    pad2.innerHTML = '<button data-notes aria-pressed="false">✎ ' + L('Notes', 'Notes') + '</button><button data-erase>⌫ ' + L('Erase', 'Effacer') + '</button>';
+    el.appendChild(pad2);
+    sdkPaint(el);
+    setTimeout(() => { if (!el.querySelector('.tally')) { const tl = document.createElement('p'); tl.className = 'note tally'; tl.style.marginTop = '6px'; tl.textContent = sdkTally(); el.appendChild(tl); } }, 0);
+    g.addEventListener('click', e => { const c = e.target.closest('.c, .g'); if (!c) return; el._sel = +c.dataset.k; sdkPaint(el); });
+    pad.addEventListener('click', e => { const b = e.target.closest('button'); if (b) sdkInput(el, +b.dataset.n); });
+    pad2.querySelector('[data-notes]').onclick = () => { el._notes = !el._notes; sdkPaint(el); };
+    pad2.querySelector('[data-erase]').onclick = () => sdkInput(el, 0);
     const btns = document.createElement('div');
     btns.className = 'btns';
     btns.innerHTML = '<button data-act="check" data-s="' + i + '">' + L('Check', 'Vérifier') + '</button><button data-act="reveal" data-s="' + i + '">' + L('Reveal answer', 'Solution') + '</button><button data-act="clear" data-s="' + i + '">' + L('Clear', 'Effacer') + '</button>';
@@ -732,6 +749,7 @@ document.documentElement.lang = FR ? 'fr' : 'en';
   function mergeServerState() {
     const tag = document.getElementById('screen-state'); if (!tag) return;
     let srv = null; try { srv = JSON.parse(tag.textContent); } catch (e) {}
+    if (srv && srv.sudoku) { const done = jget(SDK_DONE); let ch = false; for (const k in srv.sudoku) if (!done[k]) { done[k] = srv.sudoku[k]; ch = true; } if (ch) jset(SDK_DONE, done); }
     if (!srv || !srv.v) return;
     const d = sGet(); let changed = false;
     if (srv.reset && srv.reset > (d.reset || 0)) {
@@ -837,27 +855,81 @@ document.documentElement.lang = FR ? 'fr' : 'en';
     else if (t.dataset.mode) { if (mode !== t.dataset.mode) { mode = t.dataset.mode; ls.set('tpt-mode', mode); layout('front'); } }
     else if (t.dataset.act) sudokuAction(t);
   });
-  reader.addEventListener('input', e => {
-    const t = e.target;
-    if (t.dataset.s === undefined) return;
-    t.value = t.value.replace(/[^1-9]/g, '').slice(-1);
-    t.classList.remove('bad');
-    sstate[t.dataset.s][t.dataset.k] = t.value;
-    ls.set(ISSUE + '-sudoku', sstate);
-  });
+  const sdkVal = (st, k) => +(st[k] || 0);
+  function sdkPaint(el) {
+    const i = +el.dataset.sudoku, d = SUDOKU[i], st = sstate[i] || (sstate[i] = {});
+    const sel = el._sel, sr = sel >= 0 ? Math.floor(sel / 9) : -1, sc = sel >= 0 ? sel % 9 : -1;
+    const selV = sel >= 0 ? (d.puzzle[sr][sc] || sdkVal(st, sel)) : 0;
+    el.classList.toggle('notes', !!el._notes);
+    el.querySelector('[data-notes]').setAttribute('aria-pressed', String(!!el._notes));
+    el.querySelectorAll('.grid > *').forEach(c => {
+      const k = +c.dataset.k, r = Math.floor(k / 9), col = k % 9;
+      const v = c.classList.contains('g') ? +c.dataset.v : sdkVal(st, k);
+      const peer = sel >= 0 && (r === sr || col === sc || (Math.floor(r / 3) === Math.floor(sr / 3) && Math.floor(col / 3) === Math.floor(sc / 3)));
+      c.classList.toggle('peer', peer && k !== sel);
+      c.classList.toggle('same', !!selV && v === selV && k !== sel);
+      c.classList.toggle('sel', k === sel && c.classList.contains('c'));
+      if (c.classList.contains('c')) {
+        if (v) c.textContent = v;
+        else { const n = st['n' + k] || ''; c.innerHTML = n ? '<span class="nt">' + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(x => '<i>' + (n.includes(x) ? x : '') + '</i>').join('') + '</span>' : ''; }
+      }
+    });
+  }
+  function sdkInput(el, n) {
+    const i = +el.dataset.sudoku, d = SUDOKU[i], st = sstate[i] || (sstate[i] = {}), k = el._sel;
+    if (!(k >= 0) || d.puzzle[Math.floor(k / 9)][k % 9]) return;
+    const cell = el.querySelector('.c[data-k="' + k + '"]'); if (cell) cell.classList.remove('bad');
+    if (!n) { delete st[k]; delete st['n' + k]; }
+    else if (el._notes) {
+      if (st[k]) return;
+      let nt = st['n' + k] || ''; nt = nt.includes(n) ? nt.replace(String(n), '') : (nt + n).split('').sort().join('');
+      if (nt) st['n' + k] = nt; else delete st['n' + k];
+    } else {
+      if (sdkVal(st, k) === n) delete st[k]; else { st[k] = String(n); delete st['n' + k];
+        // a placed number clears the same note from its row, column and box
+        const r = Math.floor(k / 9), c = k % 9;
+        for (let j = 0; j < 81; j++) { const jr = Math.floor(j / 9), jc = j % 9;
+          if ((jr === r || jc === c || (Math.floor(jr / 3) === Math.floor(r / 3) && Math.floor(jc / 3) === Math.floor(c / 3))) && st['n' + j]) {
+            st['n' + j] = st['n' + j].replace(String(n), ''); if (!st['n' + j]) delete st['n' + j]; } } }
+    }
+    ls.set(ISSUE + '-sudoku', sstate); sdkPaint(el); sdkCheckDone(el);
+  }
+  // ---- solved-puzzle record (kept on the phone, synced through the taps form, restored from each issue)
+  const SDK_DONE = 'tpt-sdk-done', SDK_REV = 'tpt-sdk-revealed';
+  const jget = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } };
+  const jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  function sdkTally() {
+    const done = jget(SDK_DONE), n = {};
+    Object.values(done).forEach(x => { n[x.label] = (n[x.label] || 0) + 1; });
+    const order = ['Easy', 'Medium', 'Hard'], fr = { Easy: 'Facile', Medium: 'Moyen', Hard: 'Difficile' };
+    const parts = order.filter(l => n[l]).map(l => L(l, fr[l]) + ' ' + n[l]);
+    return parts.length ? L('Solved so far: ', 'Résolus : ') + parts.join(' · ') : L('No sudoku solved yet.', 'Aucun sudoku résolu pour l\'instant.');
+  }
+  function sdkCheckDone(el) {
+    const i = +el.dataset.sudoku, d = SUDOKU[i], st = sstate[i] || {};
+    for (let k = 0; k < 81; k++) { const r = Math.floor(k / 9), c = k % 9; if (!d.puzzle[r][c] && sdkVal(st, k) !== d.solution[r][c]) return; }
+    const id = '{{ISSUE_ID}}#' + i, done = jget(SDK_DONE), msg = el.querySelector('.msg');
+    if (jget(SDK_REV)[id]) { if (msg) msg.textContent = L('Complete, but the answer was revealed, so it does not count.', 'Complet, mais la solution a été affichée : ça ne compte pas.'); return; }
+    if (!done[id]) {
+      done[id] = { label: d.label, t: Date.now() }; jset(SDK_DONE, done);
+      sendEvent({ a: 'sudoku', t: Date.now(), title: id, kind: d.label });
+    }
+    if (msg) msg.textContent = L('Solved. Well done. ', 'Résolu. Bravo. ') + sdkTally();
+    document.querySelectorAll('.sdk .tally').forEach(x => { x.textContent = sdkTally(); });
+  }
   function sudokuAction(b) {
-    const i = +b.dataset.s, d = SUDOKU[i], box = b.closest('.sdk'), msg = box.querySelector('.msg');
-    const inputs = [...box.querySelectorAll('input')];
+    const i = +b.dataset.s, d = SUDOKU[i], box = b.closest('.sdk'), msg = box.querySelector('.msg'), st = sstate[i] || (sstate[i] = {});
+    const cells = [...box.querySelectorAll('.c')];
     if (b.dataset.act === 'check') {
       let wrong = 0, empty = 0;
-      inputs.forEach(inp => { const k = +inp.dataset.k, v = +inp.value; if (!v) empty++; else if (v !== d.solution[Math.floor(k / 9)][k % 9]) { wrong++; inp.classList.add('bad'); } });
-      msg.textContent = wrong ? wrong + ' wrong, marked in red.' : empty ? L('All correct so far. ', 'Tout est juste pour l\'instant. ') + empty + ' squares to go.' : L('Solved. Well done.', 'Résolu. Bravo.');
+      cells.forEach(c => { const k = +c.dataset.k, v = sdkVal(st, k); if (!v) empty++; else if (v !== d.solution[Math.floor(k / 9)][k % 9]) { wrong++; c.classList.add('bad'); } });
+      msg.textContent = wrong ? L(wrong + ' wrong, marked in red.', wrong + ' erreur(s), en rouge.') : empty ? L('All correct so far. ', 'Tout est juste pour l\'instant. ') + L(empty + ' squares to go.', 'Encore ' + empty + ' cases.') : L('Solved. Well done.', 'Résolu. Bravo.');
     } else if (b.dataset.act === 'reveal') {
-      inputs.forEach(inp => { const k = +inp.dataset.k; inp.value = d.solution[Math.floor(k / 9)][k % 9]; inp.classList.remove('bad'); sstate[i][k] = inp.value; });
-      ls.set(ISSUE + '-sudoku', sstate); msg.textContent = L('Answer revealed.', 'Solution affichée.');
+      const rev = jget(SDK_REV); if (!jget(SDK_DONE)['{{ISSUE_ID}}#' + i]) { rev['{{ISSUE_ID}}#' + i] = 1; jset(SDK_REV, rev); }
+      cells.forEach(c => { const k = +c.dataset.k; st[k] = String(d.solution[Math.floor(k / 9)][k % 9]); delete st['n' + k]; c.classList.remove('bad'); });
+      ls.set(ISSUE + '-sudoku', sstate); sdkPaint(box); msg.textContent = L('Answer revealed.', 'Solution affichée.');
     } else {
-      inputs.forEach(inp => { inp.value = ''; inp.classList.remove('bad'); });
-      sstate[i] = {}; ls.set(ISSUE + '-sudoku', sstate); msg.textContent = L('Cleared.', 'Effacé.');
+      sstate[i] = {}; cells.forEach(c => c.classList.remove('bad')); ls.set(ISSUE + '-sudoku', sstate); sdkPaint(box); msg.textContent = L('Cleared.', 'Effacé.');
     }
   }
   document.addEventListener('keydown', e => {

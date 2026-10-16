@@ -29,7 +29,7 @@ def cells(x):
         for v in x:
             yield from cells(v)
 
-state, bad, feedback, prefs = {}, 0, [], {}
+state, bad, feedback, prefs, sudoku = {}, 0, [], {}, {}
 for c in cells(json.load(open(rows_path))):
     c = c.strip()
     if not c.startswith("tpt1."):
@@ -37,6 +37,9 @@ for c in cells(json.load(open(rows_path))):
     try:
         _, iv, ct = c.split(".")
         ev = json.loads(aes.decrypt(base64.b64decode(iv), base64.b64decode(ct), None))
+        if ev.get("a") == "sudoku":
+            sudoku.setdefault(ev.get("title"), {"label": ev.get("kind", ""), "t": int(ev.get("t", 0))})
+            continue
         if ev.get("a") == "pref":
             if ev.get("t", 0) >= prefs.get(ev.get("title"), (0, ""))[0]:
                 prefs[ev.get("title")] = (ev.get("t", 0), ev.get("note"))
@@ -51,7 +54,7 @@ for c in cells(json.load(open(rows_path))):
         bad += 1
 
 os.makedirs(os.path.join(ROOT, "issues", iid), exist_ok=True)
-json.dump({"v": state}, open(os.path.join(ROOT, "issues", iid, "screen-state.json"), "w"), ensure_ascii=False)
+json.dump({"v": state, "sudoku": sudoku}, open(os.path.join(ROOT, "issues", iid, "screen-state.json"), "w"), ensure_ascii=False)
 group = lambda a: sorted(v["title"] + (f" ({v['kind']})" if v["kind"] else "") for v in state.values() if v["a"] == a)
 print("SEEN / WATCHES (follow these in 'Your shows', never suggest again):", "; ".join(group("seen")) or "none")
 print("MY LIST (tell him when one comes to a Dutch streamer or cinema, never suggest again):", "; ".join(group("list")) or "none")
@@ -76,3 +79,7 @@ for f in todo:
 lang = prefs.get("lang", (0, "en"))[1] or "en"
 print()
 print(f"LANGUAGE: {lang}  (write the whole issue in {'French' if lang == 'fr' else 'English'}, see RUNBOOK 'Language')")
+
+from collections import Counter
+tally = Counter(v["label"] for v in sudoku.values())
+print("SUDOKUS SOLVED (all time, without revealing):", ", ".join(f"{k} {n}" for k, n in sorted(tally.items())) or "none yet")
