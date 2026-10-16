@@ -167,6 +167,10 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .grid .c { all: unset; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); box-sizing: border-box; min-width: 0; color: var(--accent); cursor: pointer; position: relative; }
 .grid > .c:nth-child(9n+3), .grid > .c:nth-child(9n+6) { border-right: 2.5px solid var(--ink); }
 .grid > .c:nth-child(n+19):nth-child(-n+27), .grid > .c:nth-child(n+46):nth-child(-n+54) { border-bottom: 2.5px solid var(--ink); }
+.grid { aspect-ratio: 1; grid-template-rows: repeat(9, minmax(0, 1fr)); grid-template-columns: repeat(9, minmax(0, 1fr)); }
+.grid > * { aspect-ratio: auto !important; min-height: 0; min-width: 0; overflow: hidden; }
+.grid .c { font-family: var(--display); font-size: clamp(16px, 5vw, 21px); line-height: 1; }
+.grid .nt { position: absolute; inset: 1px; width: auto; height: auto; grid-template-rows: repeat(3, 1fr); }
 .grid .c.peer { background: color-mix(in srgb, var(--accent) 7%, transparent); }
 .grid .g.same, .grid .c.same { background: color-mix(in srgb, var(--accent) 22%, transparent); }
 .grid .c.sel { background: color-mix(in srgb, var(--accent) 30%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
