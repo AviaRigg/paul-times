@@ -53,6 +53,8 @@ Amsterdam, from Annecy, plans to move to Australia in May 2027.
    suggest any listed title again; steer picks away from NOT FOR ME. A NOT SURE title may come back
    once after 30 days, with a different angle on why he would like it. Rows that do not decrypt are
    junk: ignore them. If the Sheet cannot be read, skip this step and say so in the final report.
+   It also prints SUDOKUS SOLVED (his all-time count by difficulty; the app shows it under each
+   puzzle). The Sunday weekly mentions the week's progress in one line next to the sudokus.
 5. Create `issues/<id>/` and write:
    - `sections.html` (structure below). First unlock the previous issue's source with
      `TPT_PASSWORD=<code> python kit/unlock.py <previous id>`, then copy it as the starting pattern,
