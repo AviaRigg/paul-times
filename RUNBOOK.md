@@ -284,6 +284,38 @@ splits a block). Add `kn` to headings so they stay with the next block. Availabl
 - `<div class="strip blk">` results strip, `<ol class="tl blk">` timeline, `.wx` weather grid
 - Keep blocks under about 550 px tall at 390 px wide; split long stories into several `<p class="blk">`.
 
+### Tap for more (every story)
+
+Paul can tap any story and a full-screen sheet opens with the deeper version (`docs/screen-overlay.js`,
+nothing to build). Give EVERY `.brief` and EVERY big story's `.head` a deeper version, written as the
+LAST child of that block:
+`<template class="more"> ... </template>`
+Tapping the brief, the headline, or any paragraph, In brief or pull quote of that big story opens it.
+A "More ›" marker appears on the headline automatically.
+
+- **Brief**: 2 to 4 short paragraphs: what happened in more detail, the background needed to
+  understand it, what happens next (with dates), plus sources.
+- **Big story** (`.head`): 4 to 8 paragraphs that go BEYOND the printed article (do not repeat it):
+  `<h5>Background</h5>`, `<h5>Key facts</h5>` as a `<ul>`, `<h5>What happens next</h5>`, a
+  timeline `<ol class="tl">` when the story has history, an extra photo different from the printed one,
+  and a video when there is a real one (press conference, onboard lap, game or film trailer,
+  launch footage, official channel only): `<div class="vid" data-yt="<id>"><span>Caption</span></div>`,
+  id verified with the oEmbed check in the Screen section; never invent one.
+- **Feature boxes** (Stock of the day, Radar, Tool of the week, Lisnard watch, Tech desk, Australia
+  corner, Rigging job board) also get one: more numbers, the full case for and against, links.
+  Tables and scoreboards with nothing more to say get none.
+- `<div class="you">...</div>` for "Why it matters to you" when the link is real (portfolio,
+  scooter, SF-26, AviaRigg, Australia), never forced.
+- Always end with `<div class="srcs"><a href="URL">Outlet: article title</a> ...</div>` (2 to 4 real
+  URLs you actually read). Same writing rules as the paper: paraphrase, no em or en dashes, metric.
+- Front lead: do not duplicate. Give the section's lead template `data-id="lead"` and the front
+  `.head` the attribute `data-more="lead"`.
+- Allowed inside: `p`, `h5`, `ul`, `ol.tl`, `.tbl` table, `figure.photo` (`data-src` with
+  `data-credit`/`data-link`, or `data-wiki`), `.vid`, `.you`, `.pull`, `.srcs`.
+- Time: write it from the research you already did for the story. The only extra searching is for a
+  video id. If the run is running late, cover the big stories and feature boxes first and do the
+  briefs last; a brief without a template still opens (its text plus a news search).
+
 ## Language
 
 Paul picks the paper's language in the app's Settings; step 4b prints `LANGUAGE: en` or `fr`
