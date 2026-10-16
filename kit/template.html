@@ -38,6 +38,7 @@
 html, body { height: 100%; }
 html, body, button, input, a, #reader, #bar, #pf { touch-action: manipulation; }
 .grid input { font-size: max(16px, 1em); }
+.pb { zoom: var(--tz, 1); }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.5; overflow: hidden; -webkit-text-size-adjust: 100%; }
 #src { display: none; }
 
@@ -277,7 +278,7 @@ figure.photo.ready { display: block; }
 <footer class="pf" id="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="mid"><span class="num"></span><button class="gear" aria-label="Settings">⚙</button></span><button class="next" aria-label="Next page">Next ›</button></footer>
 <div id="settings" hidden><div class="sheet" role="dialog" aria-label="Settings">
   <div class="sh-head"><h3>Settings</h3><button class="sh-close" aria-label="Close settings">Done</button></div>
-  <div class="sh-row"><span>Language</span><div class="seg" data-set="lang"><button data-v="en">English</button><button data-v="fr" disabled title="Coming later">Français</button></div></div>
+  <div class="sh-row"><span>Language</span><div class="seg" data-set="lang"><button data-v="en">English</button><button data-v="fr">Français</button></div></div>
   <div class="sh-row"><span>Text size</span><div class="seg" data-set="text"><button data-v="s">Small</button><button data-v="m">Medium</button><button data-v="l">Large</button></div></div>
   <div class="sh-row"><span>Theme</span><div class="seg" data-set="theme"><button data-v="auto">Phone</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
   <div class="sh-row"><span>Scrub speed</span><div class="seg" data-set="scrub"><button data-v="1">Slow</button><button data-v="1.6">Normal</button><button data-v="2.5">Fast</button></div></div>
@@ -292,6 +293,9 @@ figure.photo.ready { display: block; }
 <script type="application/json" id="screen-state">{{SCREEN_STATE}}</script>
 <script>
 const SUDOKU = {{SUDOKU_DATA}};
+const FR = (() => { try { return (JSON.parse(localStorage.getItem('tpt-settings')) || {}).lang === 'fr'; } catch (e) { return false; } })();
+const L = (en, fr) => FR ? fr : en;
+document.documentElement.lang = FR ? 'fr' : 'en';
 (function () {
   const app = document.getElementById('app');
   function typing() { const e = document.activeElement; return !!e && (e.tagName === 'INPUT' || e.tagName === 'TEXTAREA'); }
@@ -378,7 +382,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     el.appendChild(g);
     const btns = document.createElement('div');
     btns.className = 'btns';
-    btns.innerHTML = '<button data-act="check" data-s="' + i + '">Check</button><button data-act="reveal" data-s="' + i + '">Reveal answer</button><button data-act="clear" data-s="' + i + '">Clear</button>';
+    btns.innerHTML = '<button data-act="check" data-s="' + i + '">' + L('Check', 'Vérifier') + '</button><button data-act="reveal" data-s="' + i + '">' + L('Reveal answer', 'Solution') + '</button><button data-act="clear" data-s="' + i + '">' + L('Clear', 'Effacer') + '</button>';
     el.appendChild(btns);
     const m = document.createElement('div'); m.className = 'msg'; m.setAttribute('aria-live', 'polite'); el.appendChild(m);
   }
@@ -498,7 +502,7 @@ const SUDOKU = {{SUDOKU_DATA}};
     if (c >= 95) return ['⛈️', 'thunderstorms']; return ['☁️', ''];
   }
   const hh = iso => iso.slice(11, 16);
-  const dayName = iso => new Date(iso + 'T12:00').toLocaleDateString('en-GB', { weekday: 'short' });
+  const dayName = iso => new Date(iso + 'T12:00').toLocaleDateString(FR ? 'fr-FR' : 'en-GB', { weekday: 'short' });
   function wxCity(d) {
     // window: from the current hour to 23:00; after 21:00 switch to tomorrow 07:00 to 23:00
     const nowIso = d.current.time.slice(0, 13);
@@ -516,28 +520,30 @@ const SUDOKU = {{SUDOKU_DATA}};
     const mm = I.reduce((a, i) => a + H.precipitation[i], 0);
     const maxP = Math.max(0, ...I.map(i => H.precipitation_probability[i]));
     const peak = I.reduce((b, i) => H.precipitation_probability[i] > H.precipitation_probability[b] ? i : b, I[0]);
-    const when = c.tomorrow ? 'tomorrow' : 'today';
+    const when = c.tomorrow ? L('tomorrow', 'demain') : L('today', 'aujourd\'hui');
     if (wet.length || mm >= 1) {
       const from = hh(H.time[(wet[0] ?? peak)]), to = hh(H.time[(wet[wet.length - 1] ?? peak)]);
-      return { cls: 'yes', v: '☂ Rain gear: YES', why: `Rain likely ${when} ${from === to ? 'around ' + from : 'from ' + from + ' to ' + (+to.slice(0, 2) + 1).toString().padStart(2, '0') + ':00'}, about ${mm.toFixed(1)} mm in total (peak ${maxP}%).` };
+      const till = (+to.slice(0, 2) + 1).toString().padStart(2, '0') + ':00';
+      return { cls: 'yes', v: L('☂ Rain gear: YES', '☂ Tenue de pluie : OUI'), why: L(`Rain likely ${when} ${from === to ? 'around ' + from : 'from ' + from + ' to ' + till}, about ${mm.toFixed(1)} mm in total (peak ${maxP}%).`, `Pluie probable ${when} ${from === to ? 'vers ' + from : 'de ' + from + ' à ' + till}, environ ${mm.toFixed(1)} mm au total (pic ${maxP} %).`) };
     }
-    if (maxP >= 30 || mm >= 0.2) return { cls: 'maybe', v: '☂ Pack it, just in case', why: `Mostly dry ${when}, but a shower is possible around ${hh(H.time[peak])} (${maxP}%).` };
-    return { cls: 'no', v: 'No rain gear needed', why: `Dry ${when}: rain chance never above ${maxP}%.` };
+    if (maxP >= 30 || mm >= 0.2) return { cls: 'maybe', v: L('☂ Pack it, just in case', '☂ Prends-la, au cas où'), why: L(`Mostly dry ${when}, but a shower is possible around ${hh(H.time[peak])} (${maxP}%).`, `Plutôt sec ${when}, mais une averse est possible vers ${hh(H.time[peak])} (${maxP} %).`) };
+    return { cls: 'no', v: L('No rain gear needed', 'Pas besoin de tenue de pluie'), why: L(`Dry ${when}: rain chance never above ${maxP}%.`, `Sec ${when} : risque de pluie jamais au-dessus de ${maxP} %.`) };
   }
   function wxWear(c) {
     const H = c.d.hourly; const lo = Math.min(...c.idx.map(i => H.apparent_temperature[i]));
-    if (lo <= 3) return 'Thermal layer, warm jacket and gloves';
-    if (lo <= 9) return 'Warm jacket, gloves on the scooter';
-    if (lo <= 15) return 'Jacket';
-    if (lo <= 21) return 'Light jacket or hoodie';
-    return 'T-shirt weather';
+    if (lo <= 3) return L('Thermal layer, warm jacket and gloves', 'Sous-couche thermique, veste chaude et gants');
+    if (lo <= 9) return L('Warm jacket, gloves on the scooter', 'Veste chaude, gants sur le scooter');
+    if (lo <= 15) return L('Jacket', 'Veste');
+    if (lo <= 21) return L('Light jacket or hoodie', 'Veste légère ou sweat');
+    return L('T-shirt weather', 'Temps à t-shirt');
   }
   function wxRender(el, all) {
     const ams = wxCity(all[0]), ann = wxCity(all[1]);
     const A = all[0], H = A.hourly, D = A.daily, v = wxVerdict(ams);
     const gust = Math.max(...ams.idx.map(i => H.wind_gusts_10m[i]));
     const lo = Math.min(...ams.idx.map(i => H.apparent_temperature[i])), hi = Math.max(...ams.idx.map(i => H.temperature_2m[i]));
-    const windTxt = gust >= 60 ? `<b>Strong gusts up to ${Math.round(gust)} km/h.</b> Slow down on bridges and open roads.` : gust >= 40 ? `Gusty, up to ${Math.round(gust)} km/h. Hold the bars on bridges.` : `Light wind, gusts up to ${Math.round(gust)} km/h.`;
+    const G = Math.round(gust);
+    const windTxt = gust >= 60 ? L(`<b>Strong gusts up to ${G} km/h.</b> Slow down on bridges and open roads.`, `<b>Fortes rafales jusqu'à ${G} km/h.</b> Ralentis sur les ponts et les routes dégagées.`) : gust >= 40 ? L(`Gusty, up to ${G} km/h. Hold the bars on bridges.`, `Venteux, jusqu'à ${G} km/h. Tiens bien le guidon sur les ponts.`) : L(`Light wind, gusts up to ${G} km/h.`, `Vent faible, rafales jusqu'à ${G} km/h.`);
     const step = Math.max(1, Math.ceil(ams.idx.length / 6));
     const cells = ams.idx.filter((_, k) => k % step === 0).slice(0, 6).map(i => {
       const p = H.precipitation_probability[i];
@@ -550,22 +556,24 @@ const SUDOKU = {{SUDOKU_DATA}};
     const nowS = wxSym(A.current.weather_code);
     const B = all[1], bS = wxSym(B.current.weather_code), bi = ann.dayIdx;
     const upd = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    el.innerHTML = `<div class="live"><span>Weather · live</span><span>updated ${upd}</span></div>
-      <h5 style="margin-top:0">Amsterdam ${ams.tomorrow ? '· tomorrow' : '· today'}</h5>
+    const WXFR = { clear: 'dégagé', 'partly cloudy': 'partiellement nuageux', cloudy: 'nuageux', fog: 'brouillard', drizzle: 'bruine', rain: 'pluie', snow: 'neige', showers: 'averses', 'snow showers': 'averses de neige', thunderstorms: 'orages' };
+    const wd = x => FR ? (WXFR[x] || x) : x;
+    el.innerHTML = `<div class="live"><span>${L('Weather · live', 'Météo · en direct')}</span><span>${L('updated', 'mise à jour')} ${upd}</span></div>
+      <h5 style="margin-top:0">Amsterdam ${ams.tomorrow ? L('· tomorrow', '· demain') : L('· today', '· aujourd\'hui')}</h5>
       <div class="verdict ${v.cls}"><div class="v">${v.v}</div><div class="why">${v.why}</div></div>
-      <div class="now"><span class="t">${Math.round(A.current.temperature_2m)}°C</span><span class="d">now, ${nowS[1]}, feels ${Math.round(A.current.apparent_temperature)}°</span></div>
+      <div class="now"><span class="t">${Math.round(A.current.temperature_2m)}°C</span><span class="d">${L('now', 'maintenant')}, ${wd(nowS[1])}, ${L('feels', 'ressenti')} ${Math.round(A.current.apparent_temperature)}°</span></div>
       <ul class="facts">
-        <li><b>Range:</b> feels ${Math.round(lo)}° at worst, up to ${Math.round(hi)}°</li>
-        <li><b>Wear:</b> ${wxWear(ams)}</li>
-        <li><b>Wind:</b> ${windTxt}</li>
-        <li><b>Dark from:</b> ${hh(D.sunset[ams.dayIdx])}</li>
+        <li><b>${L('Range', 'Écart')}:</b> ${L(`feels ${Math.round(lo)}° at worst, up to ${Math.round(hi)}°`, `ressenti ${Math.round(lo)}° au pire, jusqu'à ${Math.round(hi)}°`)}</li>
+        <li><b>${L('Wear', 'Tenue')}:</b> ${wxWear(ams)}</li>
+        <li><b>${L('Wind', 'Vent')}:</b> ${windTxt}</li>
+        <li><b>${L('Dark from', 'Nuit dès')}:</b> ${hh(D.sunset[ams.dayIdx])}</li>
       </ul>
       <div class="hours">${cells}</div>
       <div class="tbl"><table>${days(A, ams.dayIdx)}</table></div>
       <h5>Annecy</h5>
-      <p class="small" style="margin:0 0 4px">${bS[0]} ${Math.round(B.current.temperature_2m)}°C now, ${bS[1]}. ${ann.tomorrow ? 'Tomorrow' : 'Today'} ${Math.round(B.daily.temperature_2m_min[bi])}° to ${Math.round(B.daily.temperature_2m_max[bi])}°, rain ${B.daily.precipitation_probability_max[bi]}%.</p>
+      <p class="small" style="margin:0 0 4px">${bS[0]} ${Math.round(B.current.temperature_2m)}°C ${L('now', 'maintenant')}, ${wd(bS[1])}. ${ann.tomorrow ? L('Tomorrow', 'Demain') : L('Today', 'Aujourd\'hui')} ${Math.round(B.daily.temperature_2m_min[bi])}° ${L('to', 'à')} ${Math.round(B.daily.temperature_2m_max[bi])}°, ${L('rain', 'pluie')} ${B.daily.precipitation_probability_max[bi]}%.</p>
       <div class="tbl"><table>${days(B, bi)}</table></div>
-      <p class="note" style="margin-top:6px">Live forecast from Open-Meteo, refreshed every time you open the issue.</p>`;
+      <p class="note" style="margin-top:6px">${L('Live forecast from Open-Meteo, refreshed every time you open the issue.', 'Prévisions en direct d\'Open-Meteo, actualisées à chaque ouverture.')}</p>`;
   }
   async function loadWeather(root) {
     const els = root.querySelectorAll('[data-wx]:not(.done)');
@@ -645,9 +653,9 @@ const SUDOKU = {{SUDOKU_DATA}};
   function renderChecked(el) {
     let items = []; try { items = JSON.parse(el.dataset.checked); } catch (e) {}
     const flags = flagsGet();
-    const lab = { right: '✓ Right', wrong: '✗ Wrong', partly: '≈ Partly', pending: '… Not yet' };
-    el.innerHTML = '<h4>Yesterday, checked</h4>' + (items.length ? '<ul>' + items.map((c, i) => `<li><span class="vd ${esc(c.verdict)}">${lab[c.verdict] || esc(c.verdict)}</span><div><p>${esc(c.text)}</p>${c.note ? `<p class="small">${esc(c.note)}</p>` : ''}
-      ${flags[c.id] ? '<p class="small flagged">⚑ Flagged, will be rechecked tomorrow.</p>' : `<button class="flagb" data-i="${i}">Not right?</button><div class="flagbox" hidden><input type="text" placeholder="What's wrong? (optional)" aria-label="What is wrong"><button class="flagsend" data-i="${i}">Send</button></div>`}</div></li>`).join('') + '</ul>' : '<p class="small">Nothing to check today.</p>');
+    const lab = FR ? { right: '✓ Juste', wrong: '✗ Faux', partly: '≈ En partie', pending: '… Pas encore' } : { right: '✓ Right', wrong: '✗ Wrong', partly: '≈ Partly', pending: '… Not yet' };
+    el.innerHTML = '<h4>' + L('Yesterday, checked', 'Hier, vérifié') + '</h4>' + (items.length ? '<ul>' + items.map((c, i) => `<li><span class="vd ${esc(c.verdict)}">${lab[c.verdict] || esc(c.verdict)}</span><div><p>${esc(c.text)}</p>${c.note ? `<p class="small">${esc(c.note)}</p>` : ''}
+      ${flags[c.id] ? '<p class="small flagged">' + L('⚑ Flagged, will be rechecked tomorrow.', '⚑ Signalé, revérifié demain.') + '</p>' : `<button class="flagb" data-i="${i}">${L('Not right?', 'Pas juste ?')}</button><div class="flagbox" hidden><input type="text" placeholder="${L("What's wrong? (optional)", 'Qu\'est-ce qui ne va pas ? (facultatif)')}" aria-label="What is wrong"><button class="flagsend" data-i="${i}">${L('Send', 'Envoyer')}</button></div>`}</div></li>`).join('') + '</ul>' : '<p class="small">' + L('Nothing to check today.', 'Rien à vérifier aujourd\'hui.') + '</p>');
     el.querySelectorAll('.flagb').forEach(b => b.onclick = () => { b.hidden = true; b.nextElementSibling.hidden = false; b.nextElementSibling.querySelector('input').focus(); });
     el.querySelectorAll('.flagsend').forEach(b => b.onclick = () => {
       const c = items[+b.dataset.i]; const note = b.previousElementSibling.value.trim();
@@ -656,9 +664,9 @@ const SUDOKU = {{SUDOKU_DATA}};
     });
   }
   function renderFeedback(el) {
-    el.innerHTML = `<h4>Something wrong or missing?</h4><p class="small">Tell the paper. It is checked and answered in a Corrections box.</p>
-      <textarea rows="3" placeholder="e.g. The Lycée figure is wrong, or: more on Valorant please" aria-label="Feedback"></textarea>
-      <button class="fbsend">Send</button><p class="small fbok" hidden>✓ Sent. Look for it in tomorrow's Corrections.</p>`;
+    el.innerHTML = `<h4>${L('Something wrong or missing?', 'Une erreur ou un manque ?')}</h4><p class="small">${L('Tell the paper. It is checked and answered in a Corrections box.', 'Dis-le au journal. C\'est vérifié et la réponse paraît dans les Rectificatifs.')}</p>
+      <textarea rows="3" placeholder="${L('e.g. The Lycée figure is wrong, or: more on Valorant please', 'ex. : ce chiffre est faux, ou : plus de Valorant stp')}" aria-label="Feedback"></textarea>
+      <button class="fbsend">${L('Send', 'Envoyer')}</button><p class="small fbok" hidden>${L("✓ Sent. Look for it in tomorrow's Corrections.", '✓ Envoyé. Réponse dans les Rectificatifs de demain.')}</p>`;
     el.querySelector('.fbsend').onclick = () => {
       const ta = el.querySelector('textarea'); const note = ta.value.trim(); if (!note) { ta.focus(); return; }
       sendEvent({ a: 'note', t: Date.now(), title: 'note', note, issue: '{{ISSUE_ID}}' });
@@ -669,13 +677,13 @@ const SUDOKU = {{SUDOKU_DATA}};
   function renderPick(el) {
     let picks = []; try { picks = JSON.parse(el.dataset.pick); } catch (e) {}
     const d = sGet(); const todo = picks.filter(p => !d.v[sKey(p)]);
-    if (!todo.length) { el.innerHTML = '<span class="lbl">Tonight\'s pick</span><p class="why" style="margin:0">You have rated every pick in this issue. New picks tomorrow.</p>'; return; }
+    if (!todo.length) { el.innerHTML = '<span class="lbl">' + L('Tonight\'s pick', 'À voir ce soir') + '</span><p class="why" style="margin:0">' + L('You have rated every pick in this issue. New picks tomorrow.', 'Tu as noté toutes les suggestions du jour. Nouvelles demain.') + '</p>'; return; }
     const p = todo[0];
-    el.innerHTML = `<span class="lbl">Tonight's pick</span><div class="pwrap"><img class="pimg" referrerpolicy="no-referrer" alt="${esc(p.t)} poster" hidden><div class="ptxt">
+    el.innerHTML = `<span class="lbl">${L("Tonight's pick", 'À voir ce soir')}</span><div class="pwrap"><img class="pimg" referrerpolicy="no-referrer" alt="${esc(p.t)} poster" hidden><div class="ptxt">
       <h4>${esc(p.t)}</h4><div class="meta">${esc([p.kind, p.y, p.where, p.rt ? 'RT ' + p.rt : ''].filter(Boolean).join(' · '))}</div></div></div>
       <p class="why">${esc(p.why)}</p>
-      <div class="btns"><button data-a="seen">✓ Seen it</button><button data-a="list" class="add">+ My list</button><button data-a="later">? Not sure</button><button data-a="no">✗ Not for me</button></div>
-      <div class="left">${todo.length - 1 ? (todo.length - 1) + ' more pick' + (todo.length > 2 ? 's' : '') + ' after this' : 'Last pick today'}</div>`;
+      <div class="btns"><button data-a="seen">${L('✓ Seen it', '✓ Déjà vu')}</button><button data-a="list" class="add">${L('+ My list', '+ Ma liste')}</button><button data-a="later">${L('? Not sure', '? Pas sûr')}</button><button data-a="no">${L('✗ Not for me', '✗ Pas pour moi')}</button></div>
+      <div class="left">${todo.length - 1 ? L((todo.length - 1) + ' more pick' + (todo.length > 2 ? 's' : '') + ' after this', 'Encore ' + (todo.length - 1) + ' après celle-ci') : L('Last pick today', 'Dernière suggestion du jour')}</div>`;
     const pim = el.querySelector('.pimg');
     (p.img ? Promise.resolve(p.img) : p.wiki ? posterFor(p.wiki) : Promise.resolve(null)).then(s => { if (s) { pim.onload = () => { pim.hidden = false; }; pim.src = s; } }).catch(() => {});
     el.querySelectorAll('button').forEach(b => b.onclick = () => setVerdict(p, b.dataset.a));
@@ -684,17 +692,17 @@ const SUDOKU = {{SUDOKU_DATA}};
     const d = sGet(); const items = Object.values(d.v).filter(x => x.a === 'list').sort((a, b) => (a.t || 0) - (b.t || 0));
     let pending = 0; try { pending = (JSON.parse(raw.get(OUT)) || []).length; } catch (e) {}
     const flash = renderList.flash; renderList.flash = '';
-    el.innerHTML = (flash ? `<p class="flash">${esc(flash)}</p>` : '') + `<h4>My list (${items.length})</h4>` + (items.length ? '<ul>' + items.map(x => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.title)}</a>` : esc(x.title)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-k="${esc(sKey({ t: x.title, y: x.y }))}">Watched ✓</button></li>`).join('') + '</ul>' : '<p class="small">Empty. Tap "+ My list" on a pick to save it here.</p>')
-      + `<div class="addown"><p class="small" style="margin:10px 0 4px"><b>Watching something else?</b> Add it and the paper will follow it.</p>
-         <input type="text" placeholder="Show or film title" aria-label="Show or film title">
-         <div class="btns2"><button data-own="seen">I watch it</button><button data-own="list">+ My list</button></div></div>
-         <p class="note" style="margin-top:8px">${FORM.action.startsWith('http') ? (pending ? pending + ' tap' + (pending > 1 ? 's' : '') + ' waiting to send' : 'All taps sent. The morning paper follows them.') : 'Saved on this phone only for now.'}</p>`;
+    el.innerHTML = (flash ? `<p class="flash">${esc(flash)}</p>` : '') + `<h4>${L('My list', 'Ma liste')} (${items.length})</h4>` + (items.length ? '<ul>' + items.map(x => `<li><span>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" style="color:inherit">${esc(x.title)}</a>` : esc(x.title)}<small>${esc([x.kind, x.y, x.where].filter(Boolean).join(' · '))}</small></span><button data-k="${esc(sKey({ t: x.title, y: x.y }))}">${L('Watched ✓', 'Vu ✓')}</button></li>`).join('') + '</ul>' : '<p class="small">' + L('Empty. Tap "+ My list" on a pick to save it here.', 'Vide. Touche « + Ma liste » sur une suggestion pour l\'ajouter ici.') + '</p>')
+      + `<div class="addown"><p class="small" style="margin:10px 0 4px"><b>${L('Watching something else?', 'Tu regardes autre chose ?')}</b> ${L('Add it and the paper will follow it.', 'Ajoute-le et le journal le suivra.')}</p>
+         <input type="text" placeholder="${L('Show or film title', 'Titre de la série ou du film')}" aria-label="Title">
+         <div class="btns2"><button data-own="seen">${L('I watch it', 'Je regarde')}</button><button data-own="list">${L('+ My list', '+ Ma liste')}</button></div></div>
+         <p class="note" style="margin-top:8px">${FORM.action.startsWith('http') ? (pending ? L(pending + ' tap' + (pending > 1 ? 's' : '') + ' waiting to send', pending + ' en attente d\'envoi') : L('All taps sent. The morning paper follows them.', 'Tout est envoyé. Le journal du matin en tient compte.')) : L('Saved on this phone only for now.', 'Enregistré sur ce téléphone pour l\'instant.')}</p>`;
     el.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { const x = sGet().v[b.dataset.k]; if (x) setVerdict({ t: x.title, y: x.y, kind: x.kind, where: x.where, link: x.link }, 'seen'); });
     const inp = el.querySelector('.addown input');
     el.querySelectorAll('button[data-own]').forEach(b => b.onclick = () => {
       const t = inp.value.trim();
-      if (!t) { inp.placeholder = 'Type a show or film title first'; inp.classList.add('need'); inp.focus(); return; }
-      renderList.flash = (b.dataset.own === 'list' ? '✓ Added ' + t + ' to My list' : '✓ The paper will follow ' + t);
+      if (!t) { inp.placeholder = L('Type a show or film title first', 'Tape d\'abord un titre'); inp.classList.add('need'); inp.focus(); return; }
+      renderList.flash = (b.dataset.own === 'list' ? L('✓ Added ' + t + ' to My list', '✓ ' + t + ' ajouté à Ma liste') : L('✓ The paper will follow ' + t, '✓ Le journal suivra ' + t));
       setVerdict({ t, y: '', kind: 'added by you' }, b.dataset.own);
     });
   }
@@ -827,13 +835,13 @@ const SUDOKU = {{SUDOKU_DATA}};
     if (b.dataset.act === 'check') {
       let wrong = 0, empty = 0;
       inputs.forEach(inp => { const k = +inp.dataset.k, v = +inp.value; if (!v) empty++; else if (v !== d.solution[Math.floor(k / 9)][k % 9]) { wrong++; inp.classList.add('bad'); } });
-      msg.textContent = wrong ? wrong + ' wrong, marked in red.' : empty ? 'All correct so far. ' + empty + ' squares to go.' : 'Solved. Well done.';
+      msg.textContent = wrong ? wrong + ' wrong, marked in red.' : empty ? L('All correct so far. ', 'Tout est juste pour l\'instant. ') + empty + ' squares to go.' : L('Solved. Well done.', 'Résolu. Bravo.');
     } else if (b.dataset.act === 'reveal') {
       inputs.forEach(inp => { const k = +inp.dataset.k; inp.value = d.solution[Math.floor(k / 9)][k % 9]; inp.classList.remove('bad'); sstate[i][k] = inp.value; });
-      ls.set(ISSUE + '-sudoku', sstate); msg.textContent = 'Answer revealed.';
+      ls.set(ISSUE + '-sudoku', sstate); msg.textContent = L('Answer revealed.', 'Solution affichée.');
     } else {
       inputs.forEach(inp => { inp.value = ''; inp.classList.remove('bad'); });
-      sstate[i] = {}; ls.set(ISSUE + '-sudoku', sstate); msg.textContent = 'Cleared.';
+      sstate[i] = {}; ls.set(ISSUE + '-sudoku', sstate); msg.textContent = L('Cleared.', 'Effacé.');
     }
   }
   document.addEventListener('keydown', e => {
@@ -859,14 +867,14 @@ const SUDOKU = {{SUDOKU_DATA}};
   function applySettings(relayout) {
     const st = setGet();
     if (st.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', st.theme);
-    document.body.style.fontSize = { s: '15.5px', m: '17px', l: '19px' }[st.text] || '17px';
+    document.documentElement.style.setProperty('--tz', { s: '0.9', m: '1', l: '1.13' }[st.text] || '1');
     scrubGain = parseFloat(st.scrub) || 1.6;
     document.querySelectorAll('#settings .seg').forEach(g => g.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === st[g.dataset.set]))));
     if (relayout) { const k = pages[current()] ? pages[current()].dataset.key : 'front'; layout(k); }
   }
   const sheet = document.getElementById('settings');
   pf.querySelector('.gear').onclick = () => {
-    sheet.querySelector('.sh-info').textContent = 'Issue {{ISSUE_ID}} · screen ' + screen.height + ' · app ' + app.offsetHeight + ' · settings stay on this phone.';
+    sheet.querySelector('.sh-info').textContent = L('Issue {{ISSUE_ID}} · screen ', 'Numéro {{ISSUE_ID}} · écran ') + screen.height + ' · app ' + app.offsetHeight + L(' · settings stay on this phone. Language applies to the next issue.', ' · réglages gardés sur ce téléphone. La langue s\'applique au prochain numéro.');
     sheet.hidden = false;
   };
   sheet.querySelector('.sh-close').onclick = () => { sheet.hidden = true; };
@@ -875,8 +883,16 @@ const SUDOKU = {{SUDOKU_DATA}};
     const st = setGet(); const key = b.parentElement.dataset.set;
     if (st[key] === b.dataset.v) return;
     st[key] = b.dataset.v; try { localStorage.setItem(SET_K, JSON.stringify(st)); } catch (e) {}
+    if (key === 'lang') { sendEvent({ a: 'pref', t: Date.now(), title: 'lang', note: b.dataset.v }); setTimeout(() => location.reload(), 400); return; }
     applySettings(key === 'text');
   });
+  if (FR) {
+    pfPrev.textContent = '‹ Préc.'; pfNext.textContent = 'Suiv. ›';
+    sheet.querySelector('h3').textContent = 'Réglages'; sheet.querySelector('.sh-close').textContent = 'OK';
+    const rows = sheet.querySelectorAll('.sh-row > span'); ['Langue', 'Taille du texte', 'Thème', 'Vitesse de défilement'].forEach((x, i) => { if (rows[i]) rows[i].textContent = x; });
+    const lab = { s: 'Petit', m: 'Moyen', l: 'Grand', auto: 'Téléphone', light: 'Clair', dark: 'Sombre', '1': 'Lent', '1.6': 'Normal', '2.5': 'Rapide' };
+    sheet.querySelectorAll('.seg button').forEach(b => { if (lab[b.dataset.v]) b.textContent = lab[b.dataset.v]; });
+  }
   applySettings(false);
 
   buildToc();

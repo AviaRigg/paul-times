@@ -264,6 +264,16 @@ splits a block). Add `kn` to headings so they stay with the next block. Availabl
 - `<div class="strip blk">` results strip, `<ol class="tl blk">` timeline, `.wx` weather grid
 - Keep blocks under about 550 px tall at 390 px wide; split long stories into several `<p class="blk">`.
 
+## Language
+
+Paul picks the paper's language in the app's Settings; step 4b prints `LANGUAGE: en` or `fr`
+(default English). For `fr`, write the entire issue in natural French as a French journalist
+would (not a literal translation): headlines, body, captions, boxes, section `data-title`s
+(Le Monde, France, Local, Marchés, Crypto, Tech et IA, Le Métier, Sport, Écrans, La Semaine,
+Dernière page) and opener names, picks' "why" lines, claims. Keep "The Paul Times" as the
+masthead. Same rules: no em or en dashes, metric, French number style (12,5 %, 5 000), dates
+like "jeudi 15 octobre". The app's buttons switch language by themselves.
+
 ## Accountability: claims, checks and corrections
 
 1. **Claims.** At the very end of every `sections.html`, after the last `</section>`, list 3 to 6

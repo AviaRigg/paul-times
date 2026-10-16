@@ -29,7 +29,7 @@ def cells(x):
         for v in x:
             yield from cells(v)
 
-state, bad, feedback = {}, 0, []
+state, bad, feedback, prefs = {}, 0, [], {}
 for c in cells(json.load(open(rows_path))):
     c = c.strip()
     if not c.startswith("tpt1."):
@@ -37,6 +37,10 @@ for c in cells(json.load(open(rows_path))):
     try:
         _, iv, ct = c.split(".")
         ev = json.loads(aes.decrypt(base64.b64decode(iv), base64.b64decode(ct), None))
+        if ev.get("a") == "pref":
+            if ev.get("t", 0) >= prefs.get(ev.get("title"), (0, ""))[0]:
+                prefs[ev.get("title")] = (ev.get("t", 0), ev.get("note"))
+            continue
         if ev.get("a") in ("flag", "note"):
             feedback.append(ev)
             continue
@@ -68,3 +72,7 @@ for f in todo:
         print(f"- t={f['t']} FLAGGED claim {f.get('title')} from issue {f.get('issue')} (we said: {f.get('verdict')}): {f.get('claim')!r}; his note: {f.get('note') or '(none)'}")
     else:
         print(f"- t={f['t']} NOTE from issue {f.get('issue')}: {f.get('note')!r}")
+
+lang = prefs.get("lang", (0, "en"))[1] or "en"
+print()
+print(f"LANGUAGE: {lang}  (write the whole issue in {'French' if lang == 'fr' else 'English'}, see RUNBOOK 'Language')")
