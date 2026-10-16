@@ -242,6 +242,21 @@ td { border-bottom: 1px solid var(--rule); padding: 5px 4px; }
 .checked .flagbox button, .feedback .fbsend { font: inherit; font-size: 14px; font-weight: 700; padding: 7px 12px; border: 0; background: var(--ink); color: var(--bg); border-radius: 3px; }
 .checked .flagged { color: var(--accent); }
 .feedback textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 3px; margin: 6px 0; }
+.pf .mid { display: flex; align-items: center; gap: 10px; }
+.pf .gear { font-size: 17px; color: var(--muted); padding: 4px 6px 2px; letter-spacing: 0; }
+#settings { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.35); display: flex; align-items: flex-end; }
+#settings[hidden] { display: none; }
+#settings .sheet { width: 100%; background: var(--bg); color: var(--ink); border-top: 3px solid var(--ink); padding: 14px max(18px, env(safe-area-inset-left, 0px)) 22px; box-sizing: border-box; max-height: 85%; overflow-y: auto; }
+#settings .sh-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--ink); padding-bottom: 6px; margin-bottom: 4px; }
+#settings h3 { font-size: 24px; margin: 0; }
+#settings .sh-close { font: inherit; font-weight: 700; color: var(--accent); background: none; border: 0; font-size: 16px; padding: 4px; }
+#settings .sh-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+#settings .seg { display: flex; border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; }
+#settings .seg button { font: inherit; font-size: 13px; padding: 7px 9px; background: transparent; color: var(--ink); border: 0; border-left: 1px solid var(--ink); }
+#settings .seg button:first-child { border-left: 0; }
+#settings .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 700; }
+#settings .seg button:disabled { color: var(--rule); }
+#settings .sh-info { margin-top: 10px; }
 .rt { font-weight: 700; white-space: nowrap; }
 .rt.fresh { color: var(--down); } .rt.rotten { color: var(--up); }
 figure.photo { display: none; }
@@ -259,7 +274,15 @@ figure.photo.ready { display: block; }
 <div id="app">
 <main id="reader" aria-label="The Paul Times, swipe left for the next page"></main>
 <div id="bar" aria-hidden="true"><i></i></div>
-<footer class="pf" id="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="num"></span><button class="next" aria-label="Next page">Next ›</button></footer>
+<footer class="pf" id="pf"><button class="prev" aria-label="Previous page">‹ Prev</button><span class="mid"><span class="num"></span><button class="gear" aria-label="Settings">⚙</button></span><button class="next" aria-label="Next page">Next ›</button></footer>
+<div id="settings" hidden><div class="sheet" role="dialog" aria-label="Settings">
+  <div class="sh-head"><h3>Settings</h3><button class="sh-close" aria-label="Close settings">Done</button></div>
+  <div class="sh-row"><span>Language</span><div class="seg" data-set="lang"><button data-v="en">English</button><button data-v="fr" disabled title="Coming later">Français</button></div></div>
+  <div class="sh-row"><span>Text size</span><div class="seg" data-set="text"><button data-v="s">Small</button><button data-v="m">Medium</button><button data-v="l">Large</button></div></div>
+  <div class="sh-row"><span>Theme</span><div class="seg" data-set="theme"><button data-v="auto">Phone</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+  <div class="sh-row"><span>Scrub speed</span><div class="seg" data-set="scrub"><button data-v="1">Slow</button><button data-v="1.6">Normal</button><button data-v="2.5">Fast</button></div></div>
+  <p class="note sh-info"></p>
+</div></div>
 </div>
 
 <div id="src">
@@ -744,12 +767,12 @@ const SUDOKU = {{SUDOKU_DATA}};
   let scrub = false;
   // Relative scrubbing: wherever you grab the bar, it starts from the page you are on and moves
   // with your finger (sliding the full bar width = going through the whole issue).
-  const SCRUB_GAIN = 1.6;   // pages move 1.6x faster than the finger: about 60% of the bar covers the whole issue
+  let scrubGain = 1.6;   // set from Settings (Slow 1, Normal 1.6, Fast 2.5)
   let scrubPos = 0, scrubX0 = 0, scrubL0 = 0;
   function scrubAt(x) {
     const r = bar.getBoundingClientRect(); if (!pages.length || !r.width) return;
     const w = reader.clientWidth, max = (pages.length - 1) * w;
-    scrubPos = Math.min(max, Math.max(0, scrubL0 + (x - scrubX0) / r.width * max * SCRUB_GAIN));
+    scrubPos = Math.min(max, Math.max(0, scrubL0 + (x - scrubX0) / r.width * max * scrubGain));
     reader.scrollLeft = scrubPos;
   }
   bar.addEventListener('pointerdown', e => {
@@ -829,6 +852,32 @@ const SUDOKU = {{SUDOKU_DATA}};
       layout(k);
     }, 200);
   });
+
+  // ---------- settings (kept on this phone) ----------
+  const SET_K = 'tpt-settings', SET_DEF = { lang: 'en', text: 'm', theme: 'auto', scrub: '1.6' };
+  function setGet() { let v = null; try { v = JSON.parse(localStorage.getItem(SET_K)); } catch (e) {} return Object.assign({}, SET_DEF, v || {}); }
+  function applySettings(relayout) {
+    const st = setGet();
+    if (st.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', st.theme);
+    document.body.style.fontSize = { s: '15.5px', m: '17px', l: '19px' }[st.text] || '17px';
+    scrubGain = parseFloat(st.scrub) || 1.6;
+    document.querySelectorAll('#settings .seg').forEach(g => g.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === st[g.dataset.set]))));
+    if (relayout) { const k = pages[current()] ? pages[current()].dataset.key : 'front'; layout(k); }
+  }
+  const sheet = document.getElementById('settings');
+  pf.querySelector('.gear').onclick = () => {
+    sheet.querySelector('.sh-info').textContent = 'Issue {{ISSUE_ID}} · screen ' + screen.height + ' · app ' + app.offsetHeight + ' · settings stay on this phone.';
+    sheet.hidden = false;
+  };
+  sheet.querySelector('.sh-close').onclick = () => { sheet.hidden = true; };
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.hidden = true; });
+  sheet.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+    const st = setGet(); const key = b.parentElement.dataset.set;
+    if (st[key] === b.dataset.v) return;
+    st[key] = b.dataset.v; try { localStorage.setItem(SET_K, JSON.stringify(st)); } catch (e) {}
+    applySettings(key === 'text');
+  });
+  applySettings(false);
 
   buildToc();
   const start = () => layout();
