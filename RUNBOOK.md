@@ -254,7 +254,9 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
     offsetParentMatrix, node-based math, deformer stacks and weights tooling, performance and
     parallel evaluation, component and modular builds, Maya 2026 features, pipeline and API.
     Never repeat a tip from the last 60 issues; practical, with a short
-    `maya.cmds` snippet that actually works), sources by section, "Past issues" link, footer note, and always ends with
+    `maya.cmds` snippet that actually works), sources by section (every source is a real
+    clickable link to the exact article used, `<a href="URL">Outlet: article title</a>`, never a bare
+    outlet name, so Paul can check any fact), "Past issues" link, footer note, and always ends with
     the feedback box `<div class="feedback blk" data-feedback></div>`.
 
 ## Writing rules
