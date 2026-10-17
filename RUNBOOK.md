@@ -30,11 +30,10 @@ before 07:00.
 nine research agents out at once with no search cap. They burned the session's usage limit and the
 shared budget of 200 web searches before a single page was written, the session was cut off, and
 nothing restarted it. Rules:
-1. **First thing, before any research:** schedule a safety-net check-in for 06:15 Amsterdam with
-   `send_later` (claude-code-remote tools). Its message: "Safety net: if today's issue is not yet in
-   docs/issues.json on origin/main, build and push it now from whatever is in issues/<id>/ and the
-   scratchpad notes, then report what is missing." Cancel it (`delete_trigger`) once the final pass is
-   pushed.
+1. **Safety net:** a separate scheduled task, "Paul Times safety net", runs Mon to Sat at 06:10
+   Amsterdam in a fresh session. If today's id is not in docs/issues.json on origin/main, it builds
+   and pushes a quick but complete paper (fast research, about 60 minutes) and
+   notifies Paul. Do not rely on it: publish early (rule 3).
 2. **At most 4 research agents at a time**, each with a hard cap of 25 web searches and an instruction
    to write its notes file as it goes (so a cut-off agent still leaves usable notes). Suggested split:
    (a) World + France + Local, (b) Markets + Crypto + Tech, (c) Craft + games + jobs, (d) Sport +
