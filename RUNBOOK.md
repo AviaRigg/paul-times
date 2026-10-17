@@ -368,8 +368,12 @@ LAST child of that block:
 Tapping the brief, the headline, or any paragraph, In brief or pull quote of that big story opens it.
 A "More ›" marker appears on the headline automatically.
 
-- **Brief**: 2 to 4 short paragraphs: what happened in more detail, the background needed to
-  understand it, what happens next (with dates), plus sources.
+- **Brief**: EVERY brief in every section gets one, no exceptions (Paul's request, 17 Oct 2026:
+  small stories with no deeper text are a gap). 1 to 2 solid paragraphs are enough: what happened
+  in more detail (numbers, names, where and when), the background needed to understand it, and
+  what happens next with dates, plus sources. Never just repeat the printed brief. Ask each research
+  agent for 2 to 3 extra facts per brief so this needs no extra searching. Before building, count:
+  every `.brief` must contain a `<template class="more">`.
 - **Big story** (`.head`): 4 to 8 paragraphs that go BEYOND the printed article (do not repeat it):
   `<h5>Background</h5>`, `<h5>Key facts</h5>` as a `<ul>`, `<h5>What happens next</h5>`, a
   timeline `<ol class="tl">` when the story has history, an extra photo different from the printed one,
@@ -388,8 +392,8 @@ A "More ›" marker appears on the headline automatically.
 - Allowed inside: `p`, `h5`, `ul`, `ol.tl`, `.tbl` table, `figure.photo` (`data-src` with
   `data-credit`/`data-link`, or `data-wiki`), `.vid`, `.you`, `.pull`, `.srcs`.
 - Time: write it from the research you already did for the story. The only extra searching is for a
-  video id. If the run is running late, cover the big stories and feature boxes first and do the
-  briefs last; a brief without a template still opens (its text plus a news search).
+  video id. If the run is running late, cover the big stories and feature boxes first, then the
+  briefs, but every brief must have its template before the final push.
 
 ## Language
 
