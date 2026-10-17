@@ -151,7 +151,7 @@ template.more { display: none; }
   }
   function wire(el) {
     el.querySelectorAll('.in figure.photo').forEach(f => sheetPhoto(f));
-    el.querySelectorAll('.in .vid[data-yt]').forEach(v => { const id = ytId(v.dataset.yt); if (id) v.insertAdjacentHTML('afterbegin', embed(id, txt(v) || 'Video')); else v.remove(); });
+    el.querySelectorAll('.in .vid[data-yt]').forEach(v => { const id = ytId(v.dataset.yt); if (!id) return v.remove(); v.insertAdjacentHTML('afterbegin', embed(id, txt(v) || 'Video')); const t = new Image(); t.onload = () => { if (t.naturalWidth <= 120) v.remove(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; });
     el.querySelectorAll('.in a[href]').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
   }
 
@@ -249,6 +249,7 @@ template.more { display: none; }
         <div class="fx">${facts.length ? `<ul class="facts">${facts.map(f => `<li><b>${esc(f[0])}</b><span>${esc(f[1])}</span></li>`).join('')}</ul>` : ''}</div>
         ${d.buttons ? `<div class="btns">${d.buttons}</div>` : ''}
         ${d.link ? `<a class="more" href="${esc(d.link)}" target="_blank" rel="noopener">${L('More ›', 'En savoir plus ›')}</a>` : ''}`, d.t);
+    if (id) { const t = new Image(), bad = () => { const w = el.querySelector('.trailer'), y = el.querySelector('a.yt'); if (y) y.remove(); if (w) w.outerHTML = `<a class="trailer none" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener"><div class="pl">▶</div><span>${L('Find the trailer on YouTube', 'Trouver la bande-annonce sur YouTube')}</span></a>`; }; t.onload = () => { if (t.naturalWidth <= 120) bad(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; }
     const img = el.querySelector('img.pst'); if (img) img.onerror = () => { const ph = document.createElement('div'); ph.className = 'pst ph'; ph.textContent = d.t; img.replaceWith(ph); };
     el.querySelectorAll('.btns button[data-a]').forEach(b => b.onclick = () => { const t = d.card && d.card.querySelector('.btns button[data-a="' + b.dataset.a + '"]'); close(); if (t) t.click(); });
     if (!d.about) liveInfo(d.specs, d.t).then(v => {

@@ -26,6 +26,25 @@ photos, portfolio, sudokus), then add the tap-for-more templates and trailer ids
 publish again. It is fine if that second pass finishes later, as long as everything is live
 before 07:00.
 
+**Run discipline (added after 17 Oct 2026, when the issue went out four hours late).** That run sent
+nine research agents out at once with no search cap. They burned the session's usage limit and the
+shared budget of 200 web searches before a single page was written, the session was cut off, and
+nothing restarted it. Rules:
+1. **First thing, before any research:** schedule a safety-net check-in for 06:15 Amsterdam with
+   `send_later` (claude-code-remote tools). Its message: "Safety net: if today's issue is not yet in
+   docs/issues.json on origin/main, build and push it now from whatever is in issues/<id>/ and the
+   scratchpad notes, then report what is missing." Cancel it (`delete_trigger`) once the final pass is
+   pushed.
+2. **At most 4 research agents at a time**, each with a hard cap of 25 web searches and an instruction
+   to write its notes file as it goes (so a cut-off agent still leaves usable notes). Suggested split:
+   (a) World + France + Local, (b) Markets + Crypto + Tech, (c) Craft + games + jobs, (d) Sport +
+   Screen including trailer ids. Read connectors (eToro, both Sheets) yourself, not in an agent.
+3. **Publish early.** By 04:30 at the latest, write `sections.html` from whatever notes exist, build,
+   commit and push. A thin section ("more later today") beats no paper. Then deepen, rebuild and
+   push again as often as needed.
+4. If a usage or rate limit error appears, do not start new agents: immediately build and push what
+   you have.
+
 **The weekly** follows exactly the same layout, sections, blocks and rules as the daily. No charts
 and no `charts.json`, ever. Differences: it covers the last 7 days, the stories go deeper, it adds
 a "Week in numbers" box and the week's best moments per section, and it has 4 sudokus.
@@ -229,14 +248,24 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    **Trailer and info overlay** (Paul taps a Coming soon poster or a pick and gets a full-screen
    sheet with poster, facts, synopsis and the trailer playing inside the paper; the code is
    `docs/screen-overlay.js`, nothing to build). Feed it for EVERY Coming soon poster and EVERY pick:
-   - Trailer: a YouTube video id (the 11 characters after `v=`). WebSearch "<title> <year> official
-     trailer youtube"; prefer the studio's or streamer's official channel (Disney, Pixar, Netflix,
-     Marvel, Sony Pictures, Universal, Pathé, Gaumont...), the latest main trailer, the English
-     original version (French films: the French trailer). Verify it with WebFetch of
+   - Trailer: a YouTube video id (the 11 characters after `v=`). REQUIRED for every Coming soon
+     poster and every pick: the trailer plays embedded inside the paper, and a missing id is a
+     visible gap (17 Oct 2026 shipped with none). How to find it: WebSearch "<title> <year> official
+     trailer"; WebSearch results rarely show YouTube URLs, so WebFetch a news article that embeds the
+     trailer (Dark Horizons, Cartoon Brew, The Playlist, Empire, Awards Radar, ComingSoon) with the
+     prompt "List every YouTube video id or youtube.com/embed or watch URL in this page, verbatim".
+     Prefer the studio's or streamer's official channel (Disney, Pixar, Netflix, Marvel, Sony
+     Pictures, Universal, Paramount, Warner Bros., LAIKA, Pathé, Gaumont...), the latest main
+     trailer, the English original version (French films: the French trailer). Verify it with
+     WebFetch (NOT curl: the sandbox proxy blocks youtube.com) of
      `https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=<id>`:
-     a title and author means OK; 401 means embedding is disabled (find another official upload);
-     404 means wrong id. Never invent an id; if none is found, leave it out and the sheet offers a
-     YouTube search button instead.
+     a title and an official author_name means OK; 401 means embedding is disabled (find another
+     official upload); 404 means wrong id. Never invent an id. Only if no official id exists at all,
+     leave it out and the sheet offers a YouTube search button instead.
+     Safety: `docs/screen-overlay.js` checks the video's thumbnail on Paul's phone and swaps a dead id
+     for the search button, so a verified id never costs anything.
+   - Videos in tap-for-more sheets (`<div class="vid" data-yt="<id>">`) use the same method: add one
+     to every big story that has an official video (trailer, press conference, onboard lap, launch).
    - Synopsis: 2 to 3 sentences of your own, no spoilers beyond the first act.
    - Poster markup: add `data-yt="<id>" data-about="<synopsis>" data-meta="Animation · Pixar · 1h 42"
      data-where="Pathé Tuschinski and Vue, original version"` (for streaming: the platform and time).

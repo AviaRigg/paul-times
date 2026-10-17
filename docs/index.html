@@ -66,7 +66,7 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
   // Issues built before the Screen overlay existed get it added here (tap posters and picks for trailer and info).
   function show(html) {
     if (!html.includes('screen-overlay.js')) {
-      const tag = '<script src="screen-overlay.js?v=2"><\/script>';
+      const tag = '<script src="screen-overlay.js?v=3"><\/script>';
       html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, tag + '</body>') : html + tag;
     }
     document.open(); document.write(html); document.close();
