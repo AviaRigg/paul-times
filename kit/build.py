@@ -61,6 +61,12 @@ tpl = (tpl.replace("{{FORM_ACTION}}", form.get("action", "")).replace("{{FORM_EN
        .replace("{{SCREEN_STATE}}", state))
 html = (tpl.replace("{{SECTIONS}}", sections).replace("{{SUDOKU_DATA}}", json.dumps(puzzles))
         .replace("{{ISSUE_ID}}", a.id).replace("{{ISSUE_LABEL}}", label))
+import html as _h
+for _m in re.finditer(r"data-(pick|checked)='([^']*)'", sections):
+    try:
+        json.loads(_h.unescape(_m.group(2)))
+    except Exception as _e:
+        print("WARNING: data-%s JSON is broken (an apostrophe must be written &#39;):" % _m.group(1), _e)
 if "—" in html:
     print("WARNING: em dash found in issue text")
 os.makedirs(os.path.join(ROOT, "build"), exist_ok=True)

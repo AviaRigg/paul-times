@@ -232,7 +232,10 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
      legal drama like Suits, Star Wars, Marvel, great animation films), with where to stream in the
      Netherlands and why in one line:
      `<div class="pick blk" data-pick='[{"t":"Title","y":"2021","kind":"Animated series","where":"Netflix","rt":"100%","why":"Why HE would like it","img":"optional image URL","link":"optional URL"}]'></div>`
-     then `<div class="mylist blk" data-mylist></div>`. His phone shows one pick at a time with
+     then `<div class="mylist blk" data-mylist></div>`.
+     The pick list sits in a single-quoted attribute: write every apostrophe inside it as `&#39;`
+     ("Cassian&#39;s"), or the whole Tonight's pick box silently disappears (17 Oct 2026). The
+     build prints a WARNING if the JSON is broken. His phone shows one pick at a time with
      "Seen it / Not for me / + My list" buttons, remembers the taps and keeps his list. You cannot
      see those taps, so never repeat a title that was in a pick list in the last 30 issues
      (unlock and check the previous issues' sources). Only give an "rt" you verified. Weekly: 8 picks.
