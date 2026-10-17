@@ -30,7 +30,7 @@ before 07:00.
 nine research agents out at once with no search cap. They burned the session's usage limit and the
 shared budget of 200 web searches before a single page was written, the session was cut off, and
 nothing restarted it. Rules:
-1. **Safety net:** a separate scheduled task, "Paul Times safety net", runs Mon to Sat at 06:10
+1. **Safety net:** a separate scheduled task, "Paul Times safety net", runs Mon to Sat at 05:14
    Amsterdam in a fresh session. If today's id is not in docs/issues.json on origin/main, it builds
    and pushes a quick but complete paper (fast research, about 60 minutes) and
    notifies Paul. Do not rely on it: publish early (rule 3).
