@@ -57,7 +57,7 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
   const l = document.getElementById('sl'), t = l.textContent; l.textContent = '';
   [...t].forEach((c, i) => { const s = document.createElement('span'); s.textContent = c === ' ' ? '\u00a0' : c; s.style.animationDelay = (0.45 + i * 0.045) + 's'; l.appendChild(s); });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const t0 = Date.now(), min = reduce ? 0 : 2300;
+  const t0 = Date.now(), min = reduce ? 0 : 3500;
   window.tptSplash = {
     ready: () => new Promise(r => setTimeout(r, Math.max(0, min - (Date.now() - t0)))),
     hide() { const e = document.getElementById('splash'); if (e) { e.classList.add('out'); setTimeout(() => e.remove(), 600); } },
