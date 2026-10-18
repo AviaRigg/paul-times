@@ -42,13 +42,11 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
 #splash .imp { position: absolute; left: 50%; top: 18px; width: 300px; height: 96px; margin-left: -150px; opacity: 0; transform: rotate(-7deg) scale(1.08); }
 #splash .imp { color: var(--accent); }
 #splash .imp svg { width: 100%; height: 100%; display: block; overflow: visible; }
-#splash .tool { position: absolute; left: 50%; top: -6px; width: 300px; margin-left: -150px; transform: translateY(-120vh) rotate(-7deg); animation: tpt-tool 1.25s cubic-bezier(.55,0,.25,1) 1.85s forwards; filter: drop-shadow(0 18px 18px rgba(0,0,0,.35)); }
-#splash .tool .knob { width: 74px; height: 74px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a0673c, #5a3218 70%); }
-#splash .tool .neck { width: 34px; height: 46px; margin: -6px auto 0; background: linear-gradient(90deg, #5a3218, #8a5530 45%, #4a2812); }
-#splash .tool .base { height: 30px; border-radius: 6px 6px 2px 2px; background: linear-gradient(#3a2a1e, #1d1510); }
-#splash .tool .rub { height: 12px; margin: 0 6px; background: #7d1515; border-radius: 0 0 3px 3px; }
+#splash .tool { position: absolute; left: 50%; top: 10px; width: 316px; height: 112px; margin-left: -158px; border-radius: 10px; opacity: 0; transform: rotate(-7deg) scale(3.2); background: linear-gradient(135deg, #8a5530, #5a3218 55%, #3f220f); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 60px 60px rgba(0,0,0,.35); animation: tpt-tool 1.25s cubic-bezier(.55,0,.25,1) 1.85s forwards; }
+#splash .tool::before { content: ""; position: absolute; inset: 9px; border-radius: 6px; background: repeating-linear-gradient(100deg, rgba(255,255,255,.04) 0 3px, rgba(0,0,0,.05) 3px 7px); }
+#splash .tool::after { content: ""; position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #b67a48, #6a3b1c 62%, #3d200d); box-shadow: 0 8px 16px rgba(0,0,0,.45), inset 0 -4px 8px rgba(0,0,0,.35); }
+@keyframes tpt-tool { 0% { opacity: 0; transform: rotate(-7deg) scale(3.2); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 70px 70px rgba(0,0,0,.25); } 12% { opacity: 1; } 34% { opacity: 1; transform: rotate(-7deg) scale(1); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.5); } 40% { transform: rotate(-7deg) scale(.975); } 58% { opacity: 1; transform: rotate(-7deg) scale(1); } 100% { opacity: 0; transform: rotate(-4deg) scale(2.6) translate(30px, -60px); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 70px 70px rgba(0,0,0,.2); } }
 #splash.hit .box { animation: tpt-shake .38s cubic-bezier(.3,.7,.4,1); }
-@keyframes tpt-tool { 0% { transform: translateY(-120vh) rotate(-7deg); } 34% { transform: translateY(0) rotate(-7deg) scaleY(1); } 40% { transform: translateY(4px) rotate(-7deg) scaleY(.93); } 58% { transform: translateY(0) rotate(-7deg) scaleY(1); } 100% { transform: translateY(-120vh) rotate(-4deg); } }
 @keyframes tpt-imp { 0% { opacity: 0; transform: rotate(-7deg) scale(1.08); } 30% { opacity: 1; } 100% { opacity: .93; transform: rotate(-7deg) scale(1); } }
 @keyframes tpt-shake { 0% { transform: translate(0,0); } 20% { transform: translate(-5px,4px); } 40% { transform: translate(4px,-3px); } 60% { transform: translate(-3px,2px); } 80% { transform: translate(1px,-1px); } 100% { transform: none; } }
 @keyframes tpt-draw { to { transform: scaleX(1); } }
@@ -72,7 +70,7 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
         <text x="150" y="35" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="11" font-weight="700" letter-spacing="4">THE PAUL TIMES</text>
         <text id="ss" x="150" y="67" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="25" font-weight="900" letter-spacing="2" textLength="250" lengthAdjust="spacingAndGlyphs">TODAY</text>
       </g></svg></div>
-    <div class="tool"><div class="knob"></div><div class="neck"></div><div class="base"></div><div class="rub"></div></div>
+    <div class="tool"></div>
   </div>
 </div></div>
 <script>
