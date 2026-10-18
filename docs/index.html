@@ -38,11 +38,22 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
 #splash .logo { font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: clamp(40px, 13vw, 54px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 14px; white-space: nowrap; }
 #splash .logo span { display: inline-block; opacity: 0; transform: translateY(.35em) scale(1.08); filter: blur(6px); animation: tpt-ink .55s cubic-bezier(.2,.8,.2,1) forwards; }
 #splash .motto { font-style: italic; color: var(--muted); font-size: 15px; margin-top: 12px; opacity: 0; animation: tpt-fade .6s ease 1.35s forwards; }
-#splash .stamp { display: inline-block; margin-top: 18px; font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); border: 1.5px solid var(--accent); padding: 5px 10px; opacity: 0; transform: rotate(-4deg) scale(1.6); animation: tpt-stamp .35s cubic-bezier(.3,1.6,.5,1) 1.7s forwards; }
+#splash .sw { position: relative; height: 130px; margin-top: 10px; }
+#splash .imp { position: absolute; left: 50%; top: 18px; width: 300px; height: 96px; margin-left: -150px; opacity: 0; transform: rotate(-7deg) scale(1.08); }
+#splash .imp { color: var(--accent); }
+#splash .imp svg { width: 100%; height: 100%; display: block; overflow: visible; }
+#splash .tool { position: absolute; left: 50%; top: -6px; width: 300px; margin-left: -150px; transform: translateY(-120vh) rotate(-7deg); animation: tpt-tool 1.25s cubic-bezier(.55,0,.25,1) 1.85s forwards; filter: drop-shadow(0 18px 18px rgba(0,0,0,.35)); }
+#splash .tool .knob { width: 74px; height: 74px; margin: 0 auto; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #a0673c, #5a3218 70%); }
+#splash .tool .neck { width: 34px; height: 46px; margin: -6px auto 0; background: linear-gradient(90deg, #5a3218, #8a5530 45%, #4a2812); }
+#splash .tool .base { height: 30px; border-radius: 6px 6px 2px 2px; background: linear-gradient(#3a2a1e, #1d1510); }
+#splash .tool .rub { height: 12px; margin: 0 6px; background: #7d1515; border-radius: 0 0 3px 3px; }
+#splash.hit .box { animation: tpt-shake .38s cubic-bezier(.3,.7,.4,1); }
+@keyframes tpt-tool { 0% { transform: translateY(-120vh) rotate(-7deg); } 34% { transform: translateY(0) rotate(-7deg) scaleY(1); } 40% { transform: translateY(4px) rotate(-7deg) scaleY(.93); } 58% { transform: translateY(0) rotate(-7deg) scaleY(1); } 100% { transform: translateY(-120vh) rotate(-4deg); } }
+@keyframes tpt-imp { 0% { opacity: 0; transform: rotate(-7deg) scale(1.08); } 30% { opacity: 1; } 100% { opacity: .93; transform: rotate(-7deg) scale(1); } }
+@keyframes tpt-shake { 0% { transform: translate(0,0); } 20% { transform: translate(-5px,4px); } 40% { transform: translate(4px,-3px); } 60% { transform: translate(-3px,2px); } 80% { transform: translate(1px,-1px); } 100% { transform: none; } }
 @keyframes tpt-draw { to { transform: scaleX(1); } }
 @keyframes tpt-fade { to { opacity: 1; } }
 @keyframes tpt-ink { to { opacity: 1; transform: none; filter: none; } }
-@keyframes tpt-stamp { to { opacity: 1; transform: rotate(-4deg) scale(1); } }
 @media (prefers-reduced-motion: reduce) { #splash *, #splash { animation-duration: .01s !important; animation-delay: 0s !important; transition-duration: .01s !important; } }
 </style></head>
 <body>
@@ -52,19 +63,32 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
   <div class="logo" id="sl">The Paul Times</div>
   <div class="rule dbl"></div>
   <div class="motto">Your daily paper, from the first coffee to the last parcel</div>
-  <div class="stamp" id="ss">Today's edition</div>
+  <div class="sw">
+    <div class="imp" id="imp"><svg viewBox="0 0 300 96" aria-hidden="true">
+      <defs><filter id="grunge" x="-5%" y="-10%" width="110%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.55" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="c"/><feTurbulence type="turbulence" baseFrequency=".04" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="c" in2="w" scale="2.5"/></filter></defs>
+      <g filter="url(#grunge)" fill="none" stroke="currentColor">
+        <rect x="4" y="4" width="292" height="88" rx="6" stroke-width="5"/>
+        <rect x="13" y="13" width="274" height="70" rx="3" stroke-width="1.6"/>
+        <text x="150" y="35" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="11" font-weight="700" letter-spacing="4">THE PAUL TIMES</text>
+        <text id="ss" x="150" y="67" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="25" font-weight="900" letter-spacing="2" textLength="250" lengthAdjust="spacingAndGlyphs">TODAY</text>
+      </g></svg></div>
+    <div class="tool"><div class="knob"></div><div class="neck"></div><div class="base"></div><div class="rub"></div></div>
+  </div>
 </div></div>
 <script>
 (function () {
   const l = document.getElementById('sl'), t = l.textContent; l.textContent = '';
   [...t].forEach((c, i) => { const s = document.createElement('span'); s.textContent = c === ' ' ? '\u00a0' : c; s.style.animationDelay = (0.45 + i * 0.045) + 's'; l.appendChild(s); });
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const t0 = Date.now(), min = reduce ? 0 : 3500;
+  const t0 = Date.now(), min = reduce ? 0 : 4300;
+  const hitAt = reduce ? 0 : 2275, sp = document.getElementById('splash'), imp = document.getElementById('imp');
+  setTimeout(() => { imp.style.animation = 'tpt-imp .45s ease-out forwards'; if (!reduce) { sp.classList.add('hit'); try { navigator.vibrate && navigator.vibrate(18); } catch (e) {} } }, hitAt);
+  if (reduce) document.querySelector('#splash .tool').style.display = 'none';
   window.tptSplash = {
     ready: () => new Promise(r => setTimeout(r, Math.max(0, min - (Date.now() - t0)))),
     hide() { const e = document.getElementById('splash'); if (e) { e.classList.add('out'); setTimeout(() => e.remove(), 600); } },
     fade() { const e = document.getElementById('splash'); if (e) e.classList.add('fade'); return new Promise(r => setTimeout(r, reduce ? 0 : 520)); },
-    label(x) { const e = document.getElementById('ss'); if (e && x) e.textContent = x; }
+    label(x) { const e = document.getElementById('ss'); if (e && x) { e.textContent = x.toUpperCase(); if (x.length < 14) e.removeAttribute('textLength'); } }
   };
 })();
 </script>
