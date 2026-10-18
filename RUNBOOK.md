@@ -18,7 +18,7 @@ explanations anywhere in the paper.
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
 | Daily | Mon to Sat, starts about 03:00, done before 07:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
-| Weekly | Sunday, starts about 08:20 Amsterdam (replaces the Sunday daily) | `YYYY-MM-DD-weekly` | last 7 days | same 12 pages and layout as the daily, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+| Weekly | Sunday, starts 03:30 Amsterdam (replaces the Sunday daily; safety net 06:44) | `YYYY-MM-DD-weekly` | last 7 days | same 12 pages and layout as the daily, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
 
 **Timing.** There is no 04:00 deadline. The daily run starts around 03:00 and the whole issue must
 be published before 07:00. Order of work: build and publish the core paper first (all 12 sections,
