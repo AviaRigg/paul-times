@@ -132,6 +132,11 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
       const tag = '<script src="screen-overlay.js?v=3"><\/script>';
       html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, tag + '</body>') : html + tag;
     }
+    if (!html.includes('polish.css')) {
+      const css = '<link rel="stylesheet" href="polish.css?v=1">', js = '<script src="polish.js?v=1"><\/script>';
+      html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, css + '</head>') : css + html;
+      html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, js + '</body>') : html + js;
+    }
     const fade = '<style>@keyframes tpt-in{from{opacity:0;transform:translateY(10px)}}body{animation:tpt-in .7s cubic-bezier(.2,.8,.2,1) both}</style>';
     html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, fade + '</head>') : fade + html;
     tptSplash.ready().then(tptSplash.fade).then(() => { document.open(); document.write(html); document.close(); });

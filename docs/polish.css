@@ -1,0 +1,106 @@
+/* The Paul Times: polish layer (loaded on every issue by index.html).
+   Calm, Apple-like motion and finish on top of the broadsheet layout. */
+:root {
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --spring: cubic-bezier(.34, 1.4, .64, 1);
+  --hair: color-mix(in srgb, var(--ink) 14%, transparent);
+  --hair2: color-mix(in srgb, var(--ink) 8%, transparent);
+  --lift: 0 1px 2px rgba(0,0,0,.04), 0 6px 18px -8px rgba(0,0,0,.18);
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.6); } }
+:root[data-theme="dark"] { --lift: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.6); }
+
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* ---------- chrome: frosted header, floating pager, progress ---------- */
+.ph { border-bottom-color: var(--hair); background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(1.6) blur(14px); backdrop-filter: saturate(1.6) blur(14px); position: relative; z-index: 2; }
+.ph .where { transition: color .4s var(--ease-out); }
+#bar { height: 3px; background: var(--hair2); }
+#bar i { border-radius: 0 3px 3px 0; box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent); transition: background .4s var(--ease-out), width .12s linear; }
+.pf { padding-top: 6px; padding-bottom: 2px; }
+.pf button { border-radius: 999px; padding: 6px 12px 5px; transition: transform .25s var(--spring), background .25s; }
+.pf button:active:not(:disabled) { transform: scale(.92); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.pf .num { font-variant-numeric: tabular-nums; }
+.pf .gear { transition: transform .5s var(--spring); }
+.pf .gear:active { transform: rotate(60deg) scale(.9); }
+
+/* page depth while swiping (driven by --p from polish.js: 0 = centred, ±1 = one page away) */
+.page .pb { transform-origin: 50% 40%; will-change: transform, opacity; }
+.page.pz .pb { transform: translate3d(calc(var(--p, 0) * 9%), 0, 0) scale(calc(1 - var(--pa, 0) * .06)); opacity: calc(1 - var(--pa, 0) * .45); }
+
+/* ---------- cards ---------- */
+.box, .fun, .inbrief, .pick, .sdk, .checked, .teaser, .feedback, .wxl, .mylist { border-radius: var(--r); }
+.box, .checked, .sdk { border: 1px solid var(--hair); box-shadow: var(--lift); }
+.box.inv { border: 0; box-shadow: 0 10px 28px -12px rgba(0,0,0,.45); }
+.box h4, .checked h4, .feedback h4 { border-bottom-color: var(--hair); }
+.fun { border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-top-width: 5px; border-top-color: var(--accent); box-shadow: var(--lift); }
+.inbrief { border-top: 0; border-left: 3px solid var(--accent); border-radius: 4px var(--r) var(--r) 4px; background: color-mix(in srgb, var(--accent) 7%, var(--card)); padding: 10px 14px; }
+.pick { border-width: 1.5px; box-shadow: var(--lift); overflow: hidden; }
+.pick .pwrap .pimg, .pgrid .poster .pp { border-radius: 10px; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
+.teaser { border-radius: 12px; border-top-width: 0; box-shadow: var(--lift); padding: 11px 11px 10px; background-image: linear-gradient(var(--accent), var(--accent)); background-size: 100% 3px; background-repeat: no-repeat; overflow: hidden; }
+.brief { border-bottom-color: var(--hair); }
+td { border-bottom-color: var(--hair2); }
+th { border-bottom-color: var(--hair); }
+.tbl { border-radius: 8px; }
+.match { border-radius: 10px; border-color: var(--hair); }
+.match.win { border-color: var(--ink); }
+.toc button { border-bottom-color: var(--hair); border-radius: 8px; padding: 10px 6px; transition: background .2s, transform .25s var(--spring); }
+.toc button span:last-child { color: var(--accent); }
+.pull { border-radius: 0; }
+.verdict { border-radius: 2px; }
+
+/* ---------- photos ---------- */
+.photo .ph-img, .plate { border-radius: 12px; }
+.photo:not(.portrait) .ph-img { box-shadow: 0 10px 26px -14px rgba(0,0,0,.55); }
+.photo.portrait .ph-img { border-radius: 10px; }
+figcaption { border-bottom-color: var(--hair); }
+figure.photo.ready .ph-img { animation: tpt-photo .9s var(--ease-out) both; }
+@keyframes tpt-photo { from { opacity: 0; transform: scale(1.035); filter: blur(6px) saturate(.6); } }
+
+/* ---------- headlines ---------- */
+.lead h1 { font-size: 33px; letter-spacing: -.022em; line-height: 1.08; }
+.head h3 { letter-spacing: -.018em; }
+.opener { border-bottom-width: 2.5px; }
+.opener .n { font-variant-numeric: lining-nums; }
+
+/* ---------- touch feedback ---------- */
+.teaser, .toc button, .pick .btns button, .btns2 button, .sdk .pad button, .sdk .pad2 button, .sdk .btns button, .pgrid .poster, .brief, .head, .jump, .mylist li button, #settings .seg button {
+  transition: transform .3s var(--spring), background-color .2s, box-shadow .3s var(--ease-out);
+}
+.teaser:active, .pick .btns button:active, .btns2 button:active, .sdk .pad button:active, .sdk .pad2 button:active, .sdk .btns button:active, .pgrid .poster:active, .mylist li button:active, #settings .seg button:active { transform: scale(.95); }
+.toc button:active { transform: scale(.98); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.brief:active, .head:active { transform: scale(.985); }
+.pick .btns button, .btns2 button, .sdk .pad button, .sdk .pad2 button, .sdk .btns button { border-radius: 12px; }
+.sdk .grid { border-radius: 6px; overflow: hidden; }
+.sdk .grid .c { transition: background-color .18s; }
+.sdk .grid .c.pop { animation: tpt-pop .35s var(--spring); }
+@keyframes tpt-pop { 40% { transform: scale(1.25); } }
+
+/* ---------- reveal on scroll / arrival ---------- */
+.tpt-anim .pb > .blk { transition: opacity .7s var(--ease-out), transform .8s var(--ease-out), filter .7s var(--ease-out); }
+.tpt-anim .pb > .blk.rv0 { opacity: 0; transform: translate3d(0, 22px, 0) scale(.985); filter: blur(4px); }
+.tpt-anim .opener .n { display: inline-block; }
+.tpt-anim .page.fresh .opener .n { animation: tpt-num .9s var(--spring) both; }
+.tpt-anim .page.fresh .opener h2 { animation: tpt-rise .8s var(--ease-out) .08s both; }
+.tpt-anim .page.fresh .opener { animation: tpt-rule .9s var(--ease-out) both; }
+@keyframes tpt-num { from { opacity: 0; transform: translateY(14px) scale(.6); } }
+@keyframes tpt-rise { from { opacity: 0; transform: translateY(16px); } }
+@keyframes tpt-rule { from { border-bottom-color: transparent; } }
+.fun .big.counting { font-variant-numeric: tabular-nums; }
+
+/* ---------- settings sheet ---------- */
+#settings { background: rgba(0,0,0,0); transition: background .35s var(--ease-out); -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
+#settings.open { background: rgba(0,0,0,.32); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+#settings .sheet { border-top: 0; border-radius: 22px 22px 0 0; box-shadow: 0 -12px 40px -10px rgba(0,0,0,.35); transform: translateY(100%); transition: transform .5s var(--ease-out); padding-top: 22px; position: relative; }
+#settings .sheet::before { content: ""; position: absolute; top: 8px; left: 50%; width: 38px; height: 5px; margin-left: -19px; border-radius: 3px; background: var(--hair); }
+#settings.open .sheet { transform: none; }
+#settings .seg { border-color: var(--hair); border-radius: 10px; background: var(--hair2); padding: 2px; gap: 2px; }
+#settings .seg button { border: 0; border-radius: 8px; }
+#settings .seg button[aria-pressed="true"] { box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+#settings .sh-row { border-bottom-color: var(--hair); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tpt-anim .pb > .blk, .page .pb, figure.photo.ready .ph-img, .tpt-anim .page.fresh .opener, .tpt-anim .page.fresh .opener .n, .tpt-anim .page.fresh .opener h2 { animation: none !important; transition: none !important; transform: none !important; opacity: 1 !important; filter: none !important; }
+}
