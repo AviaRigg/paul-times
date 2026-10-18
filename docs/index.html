@@ -29,6 +29,8 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
 .small a { color: var(--muted); }
 #splash { position: fixed; inset: 0; z-index: 9; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 24px; transition: opacity .45s ease, transform .55s cubic-bezier(.6,0,.3,1); }
 #splash.out { opacity: 0; transform: translateY(-14px); pointer-events: none; }
+#splash .box { transition: opacity .5s ease, transform .6s cubic-bezier(.6,0,.3,1), filter .5s ease; }
+#splash.fade .box { opacity: 0; transform: translateY(-18px) scale(.97); filter: blur(3px); }
 #splash .box { width: 100%; max-width: 360px; text-align: center; }
 #splash .rule { height: 0; border-top: 1.5px solid var(--ink); transform: scaleX(0); animation: tpt-draw .7s cubic-bezier(.7,0,.2,1) forwards; }
 #splash .rule.dbl { border-top: 3px double var(--ink); height: 3px; animation-delay: 1.05s; }
@@ -61,6 +63,7 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
   window.tptSplash = {
     ready: () => new Promise(r => setTimeout(r, Math.max(0, min - (Date.now() - t0)))),
     hide() { const e = document.getElementById('splash'); if (e) { e.classList.add('out'); setTimeout(() => e.remove(), 600); } },
+    fade() { const e = document.getElementById('splash'); if (e) e.classList.add('fade'); return new Promise(r => setTimeout(r, reduce ? 0 : 520)); },
     label(x) { const e = document.getElementById('ss'); if (e && x) e.textContent = x; }
   };
 })();
@@ -107,9 +110,9 @@ button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px;
       const tag = '<script src="screen-overlay.js?v=3"><\/script>';
       html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, tag + '</body>') : html + tag;
     }
-    const fade = '<style>@keyframes tpt-in{from{opacity:0;transform:translateY(10px)}}body{animation:tpt-in .5s cubic-bezier(.2,.8,.2,1)}</style>';
+    const fade = '<style>@keyframes tpt-in{from{opacity:0;transform:translateY(10px)}}body{animation:tpt-in .7s cubic-bezier(.2,.8,.2,1) both}</style>';
     html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, fade + '</head>') : fade + html;
-    tptSplash.ready().then(() => { document.open(); document.write(html); document.close(); });
+    tptSplash.ready().then(tptSplash.fade).then(() => { document.open(); document.write(html); document.close(); });
   }
   async function saved() {
     const raw = store.get('tpt-key-' + cfg.salt);
