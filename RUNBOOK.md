@@ -18,7 +18,7 @@ explanations anywhere in the paper.
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
 | Daily | Mon to Sat, starts about 03:00, done before 07:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
-| Weekly | Sunday, starts 03:30 Amsterdam (replaces the Sunday daily; safety net 06:44) | `YYYY-MM-DD-weekly` | last 7 days | same 12 pages and layout as the daily, about twice as long | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+| Sunday | Sunday, starts 03:30 Amsterdam (safety net 06:44) | `YYYY-MM-DD` (the morning's date), built with `--edition daily` | SATURDAY's news plus overnight events, exactly like a daily, plus the Sunday magazine section (below) | 13 pages: the daily's 12 plus **sunday** | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
 
 **Timing.** There is no 04:00 deadline. The daily run starts around 03:00 and the whole issue must
 be published before 07:00. Order of work: build and publish the core paper first (all 12 sections,
@@ -44,12 +44,45 @@ nothing restarted it. Rules:
 4. If a usage or rate limit error appears, do not start new agents: immediately build and push what
    you have.
 
-**The weekly** follows exactly the same layout, sections, blocks and rules as the daily. No charts
-and no `charts.json`, ever. Differences: it covers the last 7 days, the stories go deeper, it adds
-a "Week in numbers" box and the week's best moments per section, and it has 4 sudokus.
+**Sunday (since 18 Oct 2026, Paul's decision).** There is no recap weekly any more: Paul does not want
+a summary of the dailies he already read. Sunday is a normal daily about Saturday, with every
+section, rule and the front-page ranking below, plus one extra section, **sunday** ("The Sunday
+Read", `data-accent="--a-week"`, placed after Screen and before The Week Ahead). It holds NEW
+long-form material only, never a recap of earlier issues:
+- **The big read**: a deep explainer on the week's most important story, built on facts the dailies
+  did not print (background, how it works, who decides, scenarios with dates), 8 to 12 paragraphs,
+  photos, a timeline.
+- **Profile**: one person in the news that week (politician, founder, driver, director) or in Paul's
+  world (a rigger, a studio head), with a portrait photo.
+- **Rigging masterclass**: a longer advanced Maya 2026 walkthrough than the daily tip (a full
+  technique with a working `maya.cmds` script of 20 to 40 lines), never repeating earlier tips.
+- **Your week ahead**: what to watch for Paul personally in the next 7 days (votes, races, releases,
+  market events, his ETFs, Australia, jobs closing).
+Opener numbers then run World 2 ... Screen 10, Sunday Read 11, Week 12, Back 13.
+No charts and no `charts.json`, ever. Masthead edition label "Sunday". 4 sudokus.
+
+**Front page: rank before you write (Paul's rule, 18 Oct 2026).** The 18 Oct issue led on Hormuz while
+rioters burned the Limoges town hall on Saturday evening, the biggest French story of the day; Paul
+would have led on Limoges. So, every issue, after all research notes are in and before writing a
+word of `sections.html`:
+1. **Last-night sweep.** Agents read pages early and miss the evening. Do 2 to 4 searches yourself
+   for the previous evening and night (France first: "<date> soir", "dans la nuit", fires,
+   riots, deaths, resignations, votes; then world, sport results, markets after hours). Anything new
+   goes into the notes.
+2. **Rank.** List every candidate lead from ALL sections (World, France, Local, Markets, Crypto,
+   Tech, Craft, games, Sport, Screen), at least 8, and score each 1 to 5 on: size and drama of the
+   event (a burning landmark, deaths, a government falling), how new it is (happened yesterday
+   or overnight beats a running story), how much it touches Paul (France, Annecy, his portfolio,
+   F1, GTA 6, rigging, Australia), and how visual it is (a strong news photo exists). Highest total
+   leads the front; ties go to the newer, more visual event. A running story (a war, a market
+   slide) only leads if something genuinely new and big happened in it.
+3. Write the ranking as an HTML comment at the top of `sections.html`
+   (`<!-- FRONT RANKING: 1. ... (18) 2. ... -->`, it stays inside the encrypted file) and use #1 for
+   the lead and #2 and #3 for the two teasers.
+4. When a big story breaks after the first push, re-rank and republish.
 
 **Sudoku placement.** The section named for each sudoku below is only a default. Place the
-sudokus (`data-sudoku="0"`, `"1"`, and in the weekly `"2"`, `"3"`) in different sections chosen at
+sudokus (`data-sudoku="0"`, `"1"`, and on Sunday `"2"`, `"3"`) in different sections chosen at
 random each issue, at a natural break between blocks, so Paul comes across them while reading.
 Never two in the same section.
 
@@ -93,7 +126,7 @@ Never two in the same section.
    once after 30 days, with a different angle on why he would like it. Rows that do not decrypt are
    junk: ignore them. If the Sheet cannot be read, skip this step and say so in the final report.
    It also prints SUDOKUS SOLVED (his all-time count by difficulty; the app shows it under each
-   puzzle). The Sunday weekly mentions the week's progress in one line next to the sudokus.
+   puzzle). The Sunday issue mentions the week's progress in one line next to the sudokus.
 5. Create `issues/<id>/` and write:
    - `sections.html` (structure below). First unlock the previous issue's source with
      `TPT_PASSWORD=<code> python kit/unlock.py <previous id>`, then copy it as the starting pattern,
@@ -124,7 +157,7 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    a "Continued in <section>" jump, "The day in five lines", **Number of the day**, contents
    (`#toc`, filled automatically).
    **The front lead is the single most important or exciting story for Paul today, from ANY
-   section**, not automatically world news. Examples: "GTA 6 is out today", "Hamilton on pole
+   section, chosen with the ranking in "Front page: rank before you write"**, not automatically world news. Examples: "GTA 6 is out today", "Hamilton on pole
    in Austin", "Antonelli is world champion", a big French political crisis, a market crash
    that hits his ETFs, a major Maya or rigging release, or a war when it truly dominates.
    Teaser kickers name the topic as a reader would ("Formula 1", "France", "Markets"), never
@@ -177,7 +210,7 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    a lab breakthrough, a new device), worldwide. What it is, who is behind it, money raised and
    from whom, why it could matter, and the sceptic's view in one line. Prefer things that are
    genuinely new over big-company news already covered above; photo of the product or founders
-   when a news article has one. Weekly edition: three of them.
+   when a news article has one. Sunday: three of them.
 
 8. **craft** (`--a-craft`): 3D animation, rigging (top priority), 3D software (Maya, Blender,
    Houdini, ZBrush, Unreal), video games. Rigging is the heart of this section and gets the most
@@ -238,7 +271,7 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
      build prints a WARNING if the JSON is broken. His phone shows one pick at a time with
      "Seen it / Not for me / + My list" buttons, remembers the taps and keeps his list. You cannot
      see those taps, so never repeat a title that was in a pick list in the last 30 issues
-     (unlock and check the previous issues' sources). Only give an "rt" you verified. Weekly: 8 picks.
+     (unlock and check the previous issues' sources). Only give an "rt" you verified. Sunday: 8 picks.
    Posters (always try; they make it tempting):
    - Picks: add `"wiki": "tv|Show name"` for series (TVmaze, real portrait posters) or
      `"wiki": "en|Wikipedia_title"` for films; or `"img": "<poster URL>"` if you found one.
@@ -276,10 +309,10 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    Without `about`, the sheet fetches a summary live (TVmaze for `tv|`, otherwise Wikipedia), so
    always keep a good `data-pwiki` / `"wiki"` too.
    Photos: posters, stills and trailer frames from studio pages or news articles (route 1 or 2 in
-   Photos). Weekly edition: add the week's box office top 5 (worldwide) and all trailers released.
+   Photos). Sunday: add the weekend box office top 5 (worldwide if out, else US) and all trailers released that week.
 11. **week** (`--a-week`): timeline list of the next 10 days including key French political dates (`ol.tl`, mark the biggest item `hot`),
    editorial (one opinion piece on the top story, ending with the opposing view), Sudoku No. 2
-   (`data-sudoku="1"`). Weekly: Sudoku 3 and 4 also go in (random sections, see Sudoku placement).
+   (`data-sudoku="1"`). Sunday: Sudoku 3 and 4 also go in (random sections, see Sudoku placement).
 12. **back** (`--a-back`): starts with **Yesterday, checked** and **Corrections** (below), then **Rigging tip of the day** (Maya 2026, ADVANCED: assume a strong rigger who knows the
     basics cold; no "lock and hide attributes" level tips. Think matrix-based rigging,
     offsetParentMatrix, node-based math, deformer stacks and weights tooling, performance and
@@ -342,7 +375,7 @@ Check before publishing: for every `data-src` URL run
 the site itself means find another image. `000` (blocked by this session's network) means you
 cannot check, so keep it. Report how many images you checked and how many you dropped.
 
-Volume: daily 12 to 20 images, weekly 25 or more. Front lead always has one. Every section
+Volume: daily 12 to 20 images, Sunday 25 or more. Front lead always has one. Every section
 lead has one. Never use a photo of a different event as if it showed today's news; say
 "File photo" in the caption when the image is not of the event itself.
 
@@ -436,3 +469,5 @@ like "jeudi 15 octobre". The app's buttons switch language by themselves.
 ## Paul's standing requests
 
 - No Dutch news (Netherlands politics or national news). Amsterdam only for weather.
+- Rank every issue's candidate stories before choosing the front lead (18 Oct 2026).
+- No recap editions: Sunday is a daily about Saturday plus the Sunday Read (18 Oct 2026).
