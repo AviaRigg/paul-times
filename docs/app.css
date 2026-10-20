@@ -74,7 +74,7 @@ code { font-family: var(--font-m); font-size: 12.5px; background: var(--fill2); 
 
 /* ---------------------------------------------------------------- app chrome */
 #app { position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; display: flex; flex-direction: column; box-sizing: border-box;
-  padding-top: 0; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
+  padding-top: 0; padding-bottom: 0 !important; background: var(--bg); }
 #reader { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
 #reader::-webkit-scrollbar { display: none; }
 .page { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; box-sizing: border-box; position: relative; background: var(--bg); }
@@ -82,21 +82,21 @@ code { font-family: var(--font-m); font-size: 12.5px; background: var(--fill2); 
 /* navigation bar: invisible over the section title, frosted with a centred title once the page scrolls */
 header.ph { pointer-events: none; position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; justify-content: center; align-items: center; height: 44px;
   padding: env(safe-area-inset-top, 0px) var(--gutr) 0 var(--gut); border-bottom: .5px solid transparent; transition: border-color .25s; font-family: var(--font); }
-header.ph::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .25s; background: var(--bar);
-  -webkit-backdrop-filter: saturate(1.8) blur(20px); backdrop-filter: saturate(1.8) blur(20px); }
+header.ph::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .25s; background: var(--bar); }
+/* the blur only exists once the bar is shown: iOS Safari blurs through an invisible layer too */
 .page.scrolled > header.ph::before { opacity: 1; }
+.page.scrolled > header.ph { -webkit-backdrop-filter: saturate(1.8) blur(20px); backdrop-filter: saturate(1.8) blur(20px); }
 .page.scrolled > header.ph { border-bottom-color: var(--sep); }
 header.ph .mast-s { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; display: flex; align-items: center; justify-content: center;
   font-family: var(--font-s); font-weight: 800; font-size: 17px; letter-spacing: -.01em; color: var(--ink); opacity: 0; transition: opacity .25s; }
 header.ph .where { position: absolute; left: var(--gut); bottom: 0; height: 44px; display: flex; align-items: center; color: var(--accent);
   font-weight: 600; font-size: 13px; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .25s; }
 .page.scrolled > header.ph .mast-s, .page.scrolled > header.ph .where { opacity: 1; }
-@media (max-width: 380px) { header.ph .where { display: none; } }
-.page::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(env(safe-area-inset-bottom, 0px) + 44px); pointer-events: none; z-index: 2;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 0%, transparent), color-mix(in srgb, var(--bg) 80%, transparent)); }
+@media (max-width: 430px) { header.ph .where { display: none; } }
+/* no fade under the toolbar: pages run to the bottom edge, the glass capsule floats over them */
 
 .pb { zoom: var(--tz, 1); flex: 1; min-height: 0; overflow: hidden; box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top, 0px) + 8px) var(--gutr) 96px var(--gut); display: flex; flex-direction: column; gap: 18px; }
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) var(--gutr) calc(env(safe-area-inset-bottom, 0px) + 84px) var(--gut); display: flex; flex-direction: column; gap: 18px; }
 .pb.overflow, .mode-scroll .pb { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .pb > * { flex-shrink: 0; }
 

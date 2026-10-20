@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="manifest.webmanifest">
 <title>The Paul Times</title>
-<link rel="stylesheet" href="app.css?v=3">
+<link rel="stylesheet" href="app.css?v=4">
 <style>
 body.home { overflow: hidden; }
 body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
@@ -220,7 +220,7 @@ body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
     // Every issue gets the current design layer and the tap-for-more sheet, even ones built before they existed.
     const inject = (h, tag, where) => (new RegExp('</' + where + '>', 'i')).test(h) ? h.replace(new RegExp('</' + where + '>(?![\\s\\S]*</' + where + '>)', 'i'), tag + '</' + where + '>') : h + tag;
     if (!html.includes('screen-overlay.js')) html = inject(html, '<script src="screen-overlay.js?v=4"><\/script>', 'body');
-    if (!html.includes('app.css')) { html = inject(html, '<link rel="stylesheet" href="app.css?v=3">', 'head'); html = inject(html, '<script src="app.js?v=3"><\/script>', 'body'); }
+    if (!html.includes('app.css')) { html = inject(html, '<link rel="stylesheet" href="app.css?v=4">', 'head'); html = inject(html, '<script src="app.js?v=4"><\/script>', 'body'); }
     html = inject(html, '<style>@keyframes tpt-in{from{opacity:0;transform:scale(.985)}}body{animation:tpt-in .55s cubic-bezier(.22,1,.36,1) both}</style>', 'head');
     splashReady().then(() => { const s = $('splash'); if (s) s.classList.add('out'); setTimeout(() => { document.open(); document.write(html); document.close(); }, s ? 280 : 0); });
   }
