@@ -6,170 +6,366 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Paul Times">
 <meta name="robots" content="noindex, nofollow">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="manifest.webmanifest">
 <title>The Paul Times</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="app.css?v=1">
 <style>
-:root { --bg: #f4f1ea; --ink: #16130f; --muted: #5f584d; --rule: #c9c1b2; --accent: #8a1c1c; --card: #ebe6db; }
-@media (prefers-color-scheme: dark) { :root { --bg: #181613; --ink: #ece6da; --muted: #a79f90; --rule: #3d3832; --accent: #e3817c; --card: #23201b; color-scheme: dark; } }
-html, body { height: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, serif; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: env(safe-area-inset-top, 0px) max(20px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(20px, env(safe-area-inset-left, 0px)); }
-.wrap { width: 100%; max-width: 380px; text-align: center; }
-.name { font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: 48px; line-height: 1; letter-spacing: -.02em; border-bottom: 3px double var(--ink); padding-bottom: 10px; }
-.sub { font-style: italic; color: var(--muted); margin: 10px 0 26px; }
-form { display: flex; flex-direction: column; gap: 12px; }
-input { font: inherit; font-size: 28px; letter-spacing: .4em; text-align: center; padding: 12px; border: 1.5px solid var(--ink); background: var(--card); color: var(--ink); border-radius: 0; }
-button, a.btn { font: inherit; font-size: 17px; font-weight: 700; padding: 13px; border: 0; background: var(--ink); color: var(--bg); cursor: pointer; text-decoration: none; display: block; }
-.msg { min-height: 22px; color: var(--accent); font-weight: 700; }
-.list { text-align: left; margin-top: 8px; }
-.list a { display: flex; justify-content: space-between; gap: 10px; color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--rule); padding: 11px 2px; }
-.list a span:last-child { color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; white-space: nowrap; }
-.small { font-size: 14px; color: var(--muted); margin-top: 18px; }
-.small a { color: var(--muted); }
-#splash { position: fixed; inset: 0; z-index: 9; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 24px; transition: opacity .45s ease, transform .55s cubic-bezier(.6,0,.3,1); }
-#splash.out { opacity: 0; transform: translateY(-14px); pointer-events: none; }
-#splash .box { transition: opacity .5s ease, transform .6s cubic-bezier(.6,0,.3,1), filter .5s ease; }
-#splash.fade .box { opacity: 0; transform: translateY(-18px) scale(.97); filter: blur(3px); }
-#splash .box { width: 100%; max-width: 360px; text-align: center; }
-#splash .rule { height: 0; border-top: 1.5px solid var(--ink); transform: scaleX(0); animation: tpt-draw .7s cubic-bezier(.7,0,.2,1) forwards; }
-#splash .rule.dbl { border-top: 3px double var(--ink); height: 3px; animation-delay: 1.05s; }
-#splash .kick { font-size: 12px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; opacity: 0; animation: tpt-fade .5s ease .35s forwards; }
-#splash .logo { font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: clamp(40px, 13vw, 54px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 14px; white-space: nowrap; }
-#splash .logo span { display: inline-block; opacity: 0; transform: translateY(.35em) scale(1.08); filter: blur(6px); animation: tpt-ink .55s cubic-bezier(.2,.8,.2,1) forwards; }
-#splash .motto { font-style: italic; color: var(--muted); font-size: 15px; margin-top: 12px; opacity: 0; animation: tpt-fade .6s ease 1.35s forwards; }
-#splash .sw { position: relative; height: 130px; margin-top: 10px; }
-#splash .imp { position: absolute; left: 50%; top: 18px; width: 300px; height: 96px; margin-left: -150px; opacity: 0; transform: rotate(-7deg) scale(1.08); }
-#splash .imp { color: var(--accent); }
-#splash .imp svg { width: 100%; height: 100%; display: block; overflow: visible; }
-#splash .tool { position: absolute; left: 50%; top: 10px; width: 316px; height: 112px; margin-left: -158px; border-radius: 10px; opacity: 0; transform: rotate(-7deg) scale(3.2); background: linear-gradient(135deg, #8a5530, #5a3218 55%, #3f220f); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 60px 60px rgba(0,0,0,.35); animation: tpt-tool 1.25s cubic-bezier(.55,0,.25,1) 1.85s forwards; }
-#splash .tool::before { content: ""; position: absolute; inset: 9px; border-radius: 6px; background: repeating-linear-gradient(100deg, rgba(255,255,255,.04) 0 3px, rgba(0,0,0,.05) 3px 7px); }
-#splash .tool::after { content: ""; position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; background: radial-gradient(circle at 38% 32%, #b67a48, #6a3b1c 62%, #3d200d); box-shadow: 0 8px 16px rgba(0,0,0,.45), inset 0 -4px 8px rgba(0,0,0,.35); }
-@keyframes tpt-tool { 0% { opacity: 0; transform: rotate(-7deg) scale(3.2); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 70px 70px rgba(0,0,0,.25); } 12% { opacity: 1; } 34% { opacity: 1; transform: rotate(-7deg) scale(1); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.5); } 40% { transform: rotate(-7deg) scale(.975); } 58% { opacity: 1; transform: rotate(-7deg) scale(1); } 100% { opacity: 0; transform: rotate(-4deg) scale(2.6) translate(30px, -60px); box-shadow: inset 0 0 0 3px rgba(255,255,255,.08), inset 0 -6px 12px rgba(0,0,0,.35), 0 70px 70px rgba(0,0,0,.2); } }
-#splash.hit .box { animation: tpt-shake .38s cubic-bezier(.3,.7,.4,1); }
-@keyframes tpt-imp { 0% { opacity: 0; transform: rotate(-7deg) scale(1.08); } 30% { opacity: 1; } 100% { opacity: .93; transform: rotate(-7deg) scale(1); } }
-@keyframes tpt-shake { 0% { transform: translate(0,0); } 20% { transform: translate(-5px,4px); } 40% { transform: translate(4px,-3px); } 60% { transform: translate(-3px,2px); } 80% { transform: translate(1px,-1px); } 100% { transform: none; } }
-@keyframes tpt-draw { to { transform: scaleX(1); } }
-@keyframes tpt-fade { to { opacity: 1; } }
-@keyframes tpt-ink { to { opacity: 1; transform: none; filter: none; } }
-@media (prefers-reduced-motion: reduce) { #splash *, #splash { animation-duration: .01s !important; animation-delay: 0s !important; transition-duration: .01s !important; } }
+body.home { overflow: hidden; }
+body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
+.icon { width: 88px; height: 88px; border-radius: 22.5%; background: linear-gradient(160deg, #ff6259 0%, #ff3b30 45%, #d70015 100%);
+  box-shadow: 0 1px 1px rgba(0,0,0,.08), 0 14px 30px -10px rgba(215,0,21,.55), inset 0 1px 0 rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: var(--font-s); font-weight: 800; font-size: 46px; letter-spacing: -.04em; line-height: 1; position: relative; overflow: hidden; }
+.icon::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 20%; height: 3px; border-radius: 2px; background: rgba(255,255,255,.85); }
+.icon span { transform: translateY(-4px); }
+
+/* splash */
+#splash { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  transition: opacity .5s var(--ease), transform .6s var(--ease); }
+#splash .icon { animation: sp-icon .9s var(--spring) both; }
+#splash .t { font-family: var(--font-s); font-weight: 800; font-size: 30px; letter-spacing: -.03em; animation: sp-up .8s var(--ease) .15s both; }
+#splash .d { font-size: 15px; color: var(--ink2); font-weight: 500; animation: sp-up .8s var(--ease) .25s both; margin-top: -12px; }
+#splash.out { opacity: 0; transform: scale(1.06); pointer-events: none; }
+@keyframes sp-icon { from { opacity: 0; transform: scale(.6); filter: blur(10px); } }
+@keyframes sp-up { from { opacity: 0; transform: translateY(10px); } }
+
+/* passcode */
+#lock { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 24px calc(env(safe-area-inset-bottom, 0px) + 20px); }
+#lock[hidden], #lib[hidden] { display: none; }
+#lock .icon { width: 64px; height: 64px; font-size: 33px; margin-bottom: 18px; }
+#lock h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+#lock .sub { color: var(--ink2); font-size: 15px; margin-top: 4px; text-align: center; }
+#lock .dots { display: flex; gap: 20px; margin: 26px 0 8px; }
+#lock .dots i { width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ink); transition: background .15s; }
+#lock .dots i.on { background: var(--ink); }
+#lock .dots.shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
+@keyframes shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(5px); } 30%, 50%, 70% { transform: translateX(-10px); } 40%, 60% { transform: translateX(10px); } }
+#lock .msg { min-height: 20px; font-size: 14px; color: var(--red); font-weight: 500; margin-bottom: 18px; }
+#lock .keys { display: grid; grid-template-columns: repeat(3, 78px); gap: 16px 26px; }
+#lock .keys button { width: 78px; height: 78px; border-radius: 50%; border: 0; background: var(--fill); color: var(--ink); font-family: var(--font-d); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; transition: background .3s; -webkit-user-select: none; user-select: none; }
+#lock .keys button:active { background: var(--ink3); transition: none; }
+#lock .keys button b { font-size: 34px; font-weight: 400; }
+#lock .keys button small { font-size: 10px; font-weight: 600; letter-spacing: .16em; margin-top: 3px; color: var(--ink2); }
+#lock .keys button.ghost { background: none; font-size: 17px; font-family: var(--font); font-weight: 500; }
+#lock .keys .sp { visibility: hidden; }
+#lock .hide { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+
+/* library */
+#lib { max-width: 680px; margin: 0 auto; padding: 0 var(--gutr) calc(env(safe-area-inset-bottom, 0px) + 40px) var(--gut); box-sizing: border-box; }
+.nav { position: sticky; top: 0; z-index: 5; margin: 0 calc(-1 * var(--gutr)) 0 calc(-1 * var(--gut)); padding: calc(env(safe-area-inset-top, 0px) + 8px) var(--gutr) 8px var(--gut);
+  display: flex; align-items: center; justify-content: space-between; min-height: 28px; background: transparent; transition: background .25s, border-color .25s; border-bottom: .5px solid transparent; }
+.nav.solid { background: var(--bar); -webkit-backdrop-filter: saturate(1.8) blur(20px); backdrop-filter: saturate(1.8) blur(20px); border-bottom-color: var(--sep); }
+.nav .st { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; font-size: 17px; opacity: 0; transition: opacity .2s; pointer-events: none; padding-top: inherit; top: 0; line-height: 44px; height: 44px; margin-top: env(safe-area-inset-top, 0px); }
+.nav.solid .st { opacity: 1; }
+.nav a, .nav button { font: inherit; font-size: 17px; color: var(--red); text-decoration: none; background: none; border: 0; padding: 8px 0; position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.nav a svg { width: 20px; height: 20px; }
+.lt { font-size: 34px; font-weight: 800; letter-spacing: -.03em; margin: 4px 0 2px; }
+.ltsub { color: var(--ink2); font-size: 15px; margin-bottom: 14px; }
+.search { display: flex; align-items: center; gap: 6px; background: var(--fill); border-radius: 11px; padding: 0 10px; height: 38px; margin-bottom: 18px; }
+.search svg { width: 17px; height: 17px; color: var(--ink2); flex: none; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 17px; color: var(--ink); outline: none; }
+.search input::-webkit-search-cancel-button, .search input::-webkit-search-decoration { -webkit-appearance: none; display: none; }
+.search input::placeholder { color: var(--ink2); }
+.search .clr { display: none; width: 18px; height: 18px; border-radius: 50%; border: 0; background: var(--ink3); color: var(--bg2); font-size: 12px; line-height: 18px; padding: 0; cursor: pointer; }
+.search.has .clr { display: block; }
+.feat { display: block; background: var(--bg2); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform .35s var(--spring); margin-bottom: 26px; color: inherit; text-decoration: none; }
+.feat:active, .row:active { transform: scale(.985); }
+.feat .img { aspect-ratio: 16 / 10; background: linear-gradient(160deg, var(--a-front), #7a0010); position: relative; overflow: hidden; }
+.feat .img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; animation: fadein .7s var(--ease) both; }
+.feat .img .badge { position: absolute; left: 14px; top: 14px; background: rgba(0,0,0,.42); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; letter-spacing: .01em; }
+.feat .tx { padding: 16px 18px 18px; }
+.feat .k { color: var(--red); font-size: 13px; font-weight: 600; }
+.feat h2 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; margin: 4px 0 8px; }
+.feat p { color: var(--ink2); font-size: 15.5px; line-height: 1.42; }
+.feat .go { display: flex; gap: 10px; margin-top: 14px; }
+.btn { font: inherit; font-size: 15px; font-weight: 600; border: 0; border-radius: 999px; padding: 10px 18px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn.fill { background: var(--red); color: #fff; }
+.btn.tint { background: color-mix(in srgb, var(--red) 13%, transparent); color: var(--red); }
+.gh { font-size: 22px; font-weight: 700; letter-spacing: -.024em; margin: 0 0 10px 2px; }
+.group { background: var(--bg2); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 26px; }
+.row { display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 12px; position: relative; cursor: pointer; transition: transform .35s var(--spring), background .2s; color: inherit; text-decoration: none; }
+.row:active { background: var(--fill); }
+.row + .row::before { content: ""; position: absolute; top: 0; right: 0; left: 88px; border-top: .5px solid var(--sep); }
+.row .th { width: 62px; height: 62px; border-radius: 13px; flex: none; overflow: hidden; background: linear-gradient(160deg, var(--a-front), color-mix(in srgb, var(--a-front) 50%, #000));
+  color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-r); font-weight: 700; font-size: 22px; }
+.row .th img { width: 100%; height: 100%; object-fit: cover; display: block; animation: fadein .6s var(--ease) both; }
+.row .tx { flex: 1; min-width: 0; }
+.row .m { font-size: 13px; color: var(--ink2); font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.row .m .ed { color: #fff; background: var(--a-week); font-size: 10.5px; font-weight: 700; padding: 2px 6px; border-radius: 5px; letter-spacing: .03em; text-transform: uppercase; }
+.row .h { font-size: 16.5px; font-weight: 600; letter-spacing: -.018em; line-height: 1.25; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.row .ch { color: var(--ink3); font-size: 22px; font-weight: 400; }
+.res .h mark { background: color-mix(in srgb, var(--red) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+.res .th { font-size: 13px; }
+.empty { text-align: center; color: var(--ink2); padding: 40px 10px; font-size: 15px; }
+.foot { text-align: center; color: var(--ink3); font-size: 12.5px; margin-top: 8px; }
+@keyframes fadein { from { opacity: 0; } }
+
+/* issue sheet */
+#sheet { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0); transition: background .35s var(--ease); }
+#sheet.on { background: rgba(0,0,0,.4); }
+#sheet .sh { position: absolute; left: 0; right: 0; bottom: 0; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--bg); border-radius: 14px 14px 0 0; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain; transform: translateY(100%); transition: transform .5s var(--ease); max-width: 680px; margin: 0 auto;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 30px); box-shadow: 0 -10px 40px -10px rgba(0,0,0,.4); }
+#sheet.on .sh { transform: none; }
+#sheet .gr { position: sticky; top: 0; z-index: 2; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px 0 18px;
+  background: var(--bar); -webkit-backdrop-filter: saturate(1.8) blur(20px); backdrop-filter: saturate(1.8) blur(20px); border-bottom: .5px solid var(--sep); font-weight: 600; font-size: 17px; }
+#sheet .gr::before { content: ""; position: absolute; top: 6px; left: 50%; width: 36px; height: 5px; margin-left: -18px; border-radius: 3px; background: var(--ink3); }
+#sheet .x { width: 30px; height: 30px; border-radius: 50%; border: 0; background: var(--fill); color: var(--ink2); font-size: 18px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+#sheet .in { padding: 16px var(--gutr) 0 var(--gut); }
+#sheet .hero { aspect-ratio: 16 / 10; border-radius: 18px; overflow: hidden; background: var(--fill2); margin-bottom: 14px; box-shadow: var(--shadow2); }
+#sheet .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#sheet .k { color: var(--red); font-size: 13px; font-weight: 600; }
+#sheet h2 { font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; margin: 4px 0 8px; }
+#sheet .dek { color: var(--ink2); font-size: 16px; line-height: 1.42; }
+#sheet .go { margin: 16px 0 24px; }
+#sheet .go .btn { width: 100%; justify-content: center; padding: 14px; font-size: 17px; border-radius: 14px; box-sizing: border-box; }
+#sheet h3 { font-size: 22px; font-weight: 700; letter-spacing: -.024em; margin: 0 0 10px 2px; }
+#sheet .card { background: var(--bg2); border-radius: 18px; padding: 14px 16px; margin-bottom: 24px; box-shadow: var(--shadow); }
+#sheet .five p { position: relative; padding-left: 34px; font-size: 15.5px; line-height: 1.38; min-height: 24px; }
+#sheet .five p + p { margin-top: 10px; }
+#sheet .five b { position: absolute; left: 0; top: -1px; width: 24px; height: 24px; border-radius: 50%; background: var(--red); color: #fff; font-family: var(--font-r); font-size: 13px; display: flex; align-items: center; justify-content: center; }
+#sheet .nod { display: block; }
+#sheet .nod .lb { display: block; color: var(--red); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+#sheet .nod .big { display: block; font-family: var(--font-r); font-weight: 700; font-size: 52px; color: var(--red); letter-spacing: -.03em; line-height: 1; margin-bottom: 8px; }
+#sheet .nod p { font-size: 14.5px; color: var(--ink2); line-height: 1.38; }
+.secs { background: var(--bg2); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 18px; }
+.sec { position: relative; }
+.sec + .sec::before { content: ""; position: absolute; top: 0; right: 0; left: 58px; border-top: .5px solid var(--sep); }
+.sec > button { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 12px; padding: 0 16px; min-height: 50px; cursor: pointer; }
+.sec > button:active, .sec li:active { background: var(--fill); }
+.sec .ic { width: 30px; height: 30px; border-radius: 8px; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-r); font-size: 14px; font-weight: 700; flex: none; }
+.sec .tt { flex: 1; font-size: 17px; }
+.sec .ct { color: var(--ink2); font-size: 15px; }
+.sec .ch { color: var(--ink3); font-size: 18px; transition: transform .3s var(--ease); display: inline-block; }
+.sec.open .ch { transform: rotate(90deg); }
+.sec ul { list-style: none; margin: 0; padding: 0 0 6px 58px; display: none; }
+.sec.open ul { display: block; }
+.sec li { padding: 9px 16px 9px 0; font-size: 15px; line-height: 1.32; border-top: .5px solid var(--sep2); cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+.sec li::after { content: "›"; color: var(--ink3); }
+@media (min-width: 700px) { .feat .img { aspect-ratio: 2 / 1; } }
 </style></head>
-<body>
-<div id="splash" aria-hidden="true"><div class="box">
-  <div class="rule"></div>
-  <div class="kick" id="sk">Amsterdam · Annecy</div>
-  <div class="logo" id="sl">The Paul Times</div>
-  <div class="rule dbl"></div>
-  <div class="motto">Your daily paper, from the first coffee to the last parcel</div>
-  <div class="sw">
-    <div class="imp" id="imp"><svg viewBox="0 0 300 96" aria-hidden="true">
-      <defs><filter id="grunge" x="-5%" y="-10%" width="110%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.1 1.55" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="c"/><feTurbulence type="turbulence" baseFrequency=".04" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="c" in2="w" scale="2.5"/></filter></defs>
-      <g filter="url(#grunge)" fill="none" stroke="currentColor">
-        <rect x="4" y="4" width="292" height="88" rx="6" stroke-width="5"/>
-        <rect x="13" y="13" width="274" height="70" rx="3" stroke-width="1.6"/>
-        <text x="150" y="35" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="11" font-weight="700" letter-spacing="4">THE PAUL TIMES</text>
-        <text id="ss" x="150" y="67" text-anchor="middle" fill="currentColor" stroke="none" font-family="Georgia, serif" font-size="25" font-weight="900" letter-spacing="2" textLength="250" lengthAdjust="spacingAndGlyphs">TODAY</text>
-      </g></svg></div>
-    <div class="tool"></div>
-  </div>
-</div></div>
-<script>
-(function () {
-  const l = document.getElementById('sl'), t = l.textContent; l.textContent = '';
-  [...t].forEach((c, i) => { const s = document.createElement('span'); s.textContent = c === ' ' ? '\u00a0' : c; s.style.animationDelay = (0.45 + i * 0.045) + 's'; l.appendChild(s); });
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const t0 = Date.now(), min = reduce ? 0 : 4300;
-  const hitAt = reduce ? 0 : 2275, sp = document.getElementById('splash'), imp = document.getElementById('imp');
-  setTimeout(() => { imp.style.animation = 'tpt-imp .45s ease-out forwards'; if (!reduce) { sp.classList.add('hit'); try { navigator.vibrate && navigator.vibrate(18); } catch (e) {} } }, hitAt);
-  if (reduce) document.querySelector('#splash .tool').style.display = 'none';
-  window.tptSplash = {
-    ready: () => new Promise(r => setTimeout(r, Math.max(0, min - (Date.now() - t0)))),
-    hide() { const e = document.getElementById('splash'); if (e) { e.classList.add('out'); setTimeout(() => e.remove(), 600); } },
-    fade() { const e = document.getElementById('splash'); if (e) e.classList.add('fade'); return new Promise(r => setTimeout(r, reduce ? 0 : 520)); },
-    label(x) { const e = document.getElementById('ss'); if (e && x) { e.textContent = x.toUpperCase(); if (x.length < 14) e.removeAttribute('textLength'); } }
-  };
-})();
-</script>
-<div class="wrap">
-  <div class="name">The Paul Times</div>
-  <div class="sub" id="sub">Loading today's issue</div>
-  <div id="view"></div>
+<body class="home">
+<div id="splash" aria-hidden="true"><div class="icon"><span>P</span></div><div class="t">The Paul Times</div><div class="d" id="sd"></div></div>
+
+<div id="lock" hidden>
+  <div class="icon"><span>P</span></div>
+  <h1 id="lkh">Enter Passcode</h1>
+  <div class="sub" id="lks">The Paul Times</div>
+  <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+  <div class="msg" id="lkm" aria-live="polite"></div>
+  <div class="keys" id="keys"></div>
+  <input class="hide" id="hk" inputmode="numeric" autocomplete="off" aria-label="Passcode">
 </div>
+
+<div id="lib" hidden>
+  <div class="nav" id="nav"><a href="./" id="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Today</span></a><div class="st">Library</div><span></span></div>
+  <h1 class="lt">Library</h1>
+  <div class="ltsub" id="lsub"></div>
+  <label class="search" id="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg>
+    <input id="q" type="search" placeholder="Search every headline" autocomplete="off" enterkeyhint="search"><button class="clr" id="qc" aria-label="Clear">✕</button></label>
+  <div id="libv"></div>
+</div>
+
 <script>
 (async function () {
-  const view = document.getElementById('view'), sub = document.getElementById('sub');
+  const $ = id => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+  const FR = (() => { try { return (JSON.parse(store.get('tpt-settings')) || {}).lang === 'fr'; } catch (e) { return false; } })();
+  const L = (en, fr) => FR ? fr : en;
+  const st = (() => { try { return JSON.parse(store.get('tpt-settings')) || {}; } catch (e) { return {}; } })();
+  if (st.theme === 'light' || st.theme === 'dark') document.documentElement.setAttribute('data-theme', st.theme);
+  const esc = x => String(x == null ? '' : x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const get = async p => { const r = await fetch(p + (p.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error(p + ' ' + r.status); return r.json(); };
+  const loc = FR ? 'fr-FR' : 'en-GB';
+  const fmt = (i, o) => new Date(i.date + 'T12:00:00').toLocaleDateString(loc, o || { weekday: 'short', day: 'numeric', month: 'short' });
+  const t0 = Date.now(), wantLib = qs.has('archive');
+  const minSplash = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (wantLib ? 450 : 1100);
+  const splashReady = () => new Promise(r => setTimeout(r, Math.max(0, minSplash - (Date.now() - t0))));
+  const splashOut = () => { const e = $('splash'); if (!e) return; e.classList.add('out'); setTimeout(() => e.remove(), 600); };
+  $('sd').textContent = new Date().toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long' });
+
   let list = [], cfg;
   try { [list, cfg] = await Promise.all([get('issues.json'), get('crypto.json')]); }
-  catch (e) { sub.textContent = 'Could not load the paper. Check your connection and reopen.'; tptSplash.hide(); return; }
-  const fmt = i => new Date(i.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  catch (e) { await splashReady(); $('sd').textContent = L('Could not load the paper. Check your connection.', 'Impossible de charger le journal. Vérifie ta connexion.'); return; }
 
-  function archive() {
-    tptSplash.ready().then(tptSplash.hide);
-    sub.textContent = 'Past issues';
-    view.innerHTML = '<div class="list">' + list.map(i => '<a href="./?d=' + encodeURIComponent(i.id) + '"><span>' + fmt(i) + (i.title ? '<br><small style="color:var(--muted)">' + i.title.replace(/</g, '&lt;') + '</small>' : '') + '</span><span>' + i.edition + '</span></a>').join('') + '</div><p class="small"><a href="./">Back to today</a></p>';
-  }
-  if (qs.has('archive')) return archive();
-  if (!list.length) { sub.textContent = 'No issue yet. The first one arrives at 7:00.'; tptSplash.ready().then(tptSplash.hide); return; }
-  const issue = list.find(i => i.id === qs.get('d')) || list[0];
-  tptSplash.label((issue.edition === 'weekly' ? 'Weekly · ' : '') + fmt(issue));
-
+  const KEYNAME = 'tpt-key-' + cfg.salt;
   async function deriveKey(pw) {
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
     return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(cfg.salt), iterations: cfg.iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
   }
-  async function open(key) {
-    const enc = await get('issues/' + issue.id + '.enc');
-    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(enc.iv) }, key, b64(enc.ct));
-    return new TextDecoder().decode(pt);
-  }
-  // Issues built before the Screen overlay existed get it added here (tap posters and picks for trailer and info).
+  async function savedKey() { const raw = store.get(KEYNAME); return raw ? crypto.subtle.importKey('raw', b64(raw), { name: 'AES-GCM' }, true, ['decrypt']) : null; }
+  const dec = async (key, o) => new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(o.iv) }, key, b64(o.ct)));
+  async function openIssue(key, issue) { return dec(key, await get('issues/' + issue.id + '.enc')); }
+
   function show(html) {
-    if (!html.includes('screen-overlay.js')) {
-      const tag = '<script src="screen-overlay.js?v=3"><\/script>';
-      html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, tag + '</body>') : html + tag;
-    }
-    if (!html.includes('polish.css')) {
-      const css = '<link rel="stylesheet" href="polish.css?v=1">', js = '<script src="polish.js?v=1"><\/script>';
-      html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, css + '</head>') : css + html;
-      html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, js + '</body>') : html + js;
-    }
-    const fade = '<style>@keyframes tpt-in{from{opacity:0;transform:translateY(10px)}}body{animation:tpt-in .7s cubic-bezier(.2,.8,.2,1) both}</style>';
-    html = /<\/head>/i.test(html) ? html.replace(/<\/head>/i, fade + '</head>') : fade + html;
-    tptSplash.ready().then(tptSplash.fade).then(() => { document.open(); document.write(html); document.close(); });
+    // Every issue gets the current design layer and the tap-for-more sheet, even ones built before they existed.
+    const inject = (h, tag, where) => (new RegExp('</' + where + '>', 'i')).test(h) ? h.replace(new RegExp('</' + where + '>(?![\\s\\S]*</' + where + '>)', 'i'), tag + '</' + where + '>') : h + tag;
+    if (!html.includes('screen-overlay.js')) html = inject(html, '<script src="screen-overlay.js?v=4"><\/script>', 'body');
+    if (!html.includes('app.css')) { html = inject(html, '<link rel="stylesheet" href="app.css?v=1">', 'head'); html = inject(html, '<script src="app.js?v=1"><\/script>', 'body'); }
+    html = inject(html, '<style>@keyframes tpt-in{from{opacity:0;transform:scale(.985)}}body{animation:tpt-in .55s cubic-bezier(.22,1,.36,1) both}</style>', 'head');
+    splashReady().then(() => { const s = $('splash'); if (s) s.classList.add('out'); setTimeout(() => { document.open(); document.write(html); document.close(); }, s ? 280 : 0); });
   }
-  async function saved() {
-    const raw = store.get('tpt-key-' + cfg.salt);
-    if (!raw) return null;
-    return crypto.subtle.importKey('raw', b64(raw), { name: 'AES-GCM' }, true, ['decrypt']);
-  }
-  function form(message) {
-    tptSplash.ready().then(tptSplash.hide);
-    sub.textContent = fmt(issue) + (issue.edition === 'weekly' ? ' · Weekly' : '');
-    view.innerHTML = '<form id="f"><input id="pw" type="password" inputmode="numeric" autocomplete="current-password" aria-label="Password" placeholder="····"><button>Open today\'s paper</button><div class="msg" id="msg" aria-live="polite"></div></form><p class="small"><a href="./?archive">Past issues</a></p>';
-    const msg = document.getElementById('msg'); msg.textContent = message || '';
-    document.getElementById('f').addEventListener('submit', async e => {
-      e.preventDefault();
-      const pw = document.getElementById('pw').value.trim();
-      if (!pw) { msg.textContent = 'Enter your code first.'; return; }
-      msg.textContent = 'Unlocking...';
+
+  // ---------------- passcode ----------------
+  function lock(next, message) {
+    splashReady().then(splashOut);
+    const box = $('lock'); box.hidden = false; $('lib').hidden = true;
+    const latest = list[0];
+    $('lkh').textContent = L('Enter Passcode', 'Code d\'accès');
+    $('lks').textContent = latest ? 'The Paul Times · ' + fmt(latest, { weekday: 'long', day: 'numeric', month: 'long' }) + (latest.no ? ' · No. ' + latest.no : '') : 'The Paul Times';
+    const letters = ['', 'ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQRS', 'TUV', 'WXYZ'];
+    $('keys').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-n="${n}"><b>${n}</b><small>${letters[n - 1] || '&nbsp;'}</small></button>`).join('')
+      + `<button class="sp" tabindex="-1"></button><button data-n="0"><b>0</b><small>&nbsp;</small></button><button class="ghost" data-del>${L('Delete', 'Effacer')}</button>`;
+    const dots = $('dots'), msg = $('lkm'); let code = '', busy = false;
+    msg.textContent = message || '';
+    const paint = () => { [...dots.children].forEach((d, i) => d.classList.toggle('on', i < code.length)); $('keys').querySelector('[data-del]').textContent = code ? L('Delete', 'Effacer') : ''; };
+    async function tryCode() {
+      busy = true; msg.textContent = '';
       try {
-        const key = await deriveKey(pw);
-        const html = await open(key);
+        const key = await deriveKey(code);
+        const html = latest ? await openIssue(key, wantLib ? latest : (list.find(i => i.id === qs.get('d')) || latest)) : '';
         const raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));
-        store.set('tpt-key-' + cfg.salt, btoa(String.fromCharCode(...raw)));
-        show(html);
-      } catch (err) { msg.textContent = 'Wrong code. Try again.'; }
-    });
+        store.set(KEYNAME, btoa(String.fromCharCode(...raw)));
+        try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
+        next(key, html);
+      } catch (e) {
+        dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+        try { navigator.vibrate && navigator.vibrate([30, 40, 30]); } catch (e) {}
+        msg.textContent = L('Wrong passcode', 'Code incorrect'); code = ''; paint();
+      } finally { busy = false; }
+    }
+    const press = n => { if (busy) return; if (n === 'del') code = code.slice(0, -1); else if (code.length < 4) code += n; paint(); if (code.length === 4) setTimeout(tryCode, 120); };
+    $('keys').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.del !== undefined) press('del'); else if (b.dataset.n) press(b.dataset.n); };
+    document.onkeydown = e => { if ($('lock').hidden) return; if (/^\d$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('del'); };
+    paint();
   }
-  try {
-    const key = await saved();
-    if (key) { show(await open(key)); return; }
-  } catch (e) { store.del('tpt-key-' + cfg.salt); }
-  form();
+
+  // ---------------- library ----------------
+  const ACC = { front: '--a-front', world: '--a-world', france: '--a-france', local: '--a-local', markets: '--a-markets', crypto: '--a-crypto', tech: '--a-tech', craft: '--a-craft', sport: '--a-sport', screen: '--a-screen', week: '--a-week', sunday: '--a-week', back: '--a-back' };
+  const PH = 'tpt-libph-';
+  async function photoUrl(p) {
+    if (!p) return null;
+    if (p.src) return p.src;
+    const spec = p.wiki || '', ck = PH + spec; const c = store.get(ck); if (c) return c;
+    try {
+      if (p.file) return null;
+      const [lang, title] = spec.split('|');
+      const d = await (await fetch('https://' + lang + '.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=800&redirects=1&titles=' + encodeURIComponent(title))).json();
+      const pg = Object.values((d.query && d.query.pages) || {})[0]; const u = pg && pg.thumbnail && pg.thumbnail.source;
+      if (u) store.set(ck, u); return u || null;
+    } catch (e) { return null; }
+  }
+  function putImg(box, url) { if (!url || !box) return; const img = new Image(); img.referrerPolicy = 'no-referrer'; img.alt = ''; img.onload = () => { if (box.querySelector('.badge')) box.prepend(img); else { box.textContent = ''; box.appendChild(img); } }; img.src = url; }
+  const head = i => (i.toc && i.toc.lead) || i.title || L('Issue', 'Numéro');
+  const edLabel = i => i.edition === 'weekly' ? L('Weekly', 'Hebdo') : (new Date(i.date + 'T12:00').getDay() === 0 ? L('Sunday', 'Dimanche') : '');
+
+  async function library(key) {
+    splashReady().then(splashOut);
+    document.body.classList.add('scroll');
+    $('lock').hidden = true; const lib = $('lib'); lib.hidden = false;
+    $('today').querySelector('span').textContent = L('Today', 'Aujourd\'hui');
+    lib.querySelector('.lt').textContent = L('Library', 'Bibliothèque'); lib.querySelector('.nav .st').textContent = L('Library', 'Bibliothèque');
+    $('q').placeholder = L('Search every headline', 'Chercher dans tous les titres');
+    // decrypt every issue's contents (small, cached for the session)
+    await Promise.all(list.map(async i => { if (i.toc && i.toc.ct && key) { try { i.toc = JSON.parse(await dec(key, i.toc)); } catch (e) { i.toc = null; } } else if (i.toc && i.toc.ct) i.toc = null; }));
+    const n = list.length;
+    $('lsub').textContent = n + ' ' + (n === 1 ? L('issue', 'numéro') : L('issues', 'numéros')) + (n ? ' · ' + L('since', 'depuis') + ' ' + fmt(list[n - 1], { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+    const nav = $('nav'); addEventListener('scroll', () => nav.classList.toggle('solid', scrollY > 44), { passive: true });
+    render('');
+    const q = $('q'), sb = $('sbox'); let qt = 0;
+    q.oninput = () => { sb.classList.toggle('has', !!q.value); clearTimeout(qt); qt = setTimeout(() => render(q.value.trim()), 120); };
+    $('qc').onclick = e => { e.preventDefault(); q.value = ''; sb.classList.remove('has'); render(''); q.focus(); };
+    if (qs.get('i')) { const it = list.find(x => x.id === qs.get('i')); if (it) openSheet(it); }
+  }
+  const url = (i, s) => './?d=' + encodeURIComponent(i.id) + (s ? '&s=' + encodeURIComponent(s) : '');
+  function rowHtml(i, idx) {
+    const t = i.toc || {}, e = edLabel(i);
+    return `<a class="row" href="${url(i)}" data-i="${idx}"><div class="th" data-ph="${idx}">${esc(i.no || t.no || '')}</div><div class="tx">
+      <div class="m">${esc(fmt(i, { weekday: 'long', day: 'numeric', month: 'short' }))}${(i.no || t.no) ? ' · No. ' + esc(i.no || t.no) : ''}${e ? ` <span class="ed">${esc(e)}</span>` : ''}</div>
+      <div class="h">${esc(head(i))}</div></div><span class="ch">›</span></a>`;
+  }
+  function render(q) {
+    const v = $('libv');
+    if (!list.length) { v.innerHTML = `<p class="empty">${L('No issues yet. The first one arrives at 07:00.', 'Pas encore de numéro. Le premier arrive à 7 h.')}</p>`; return; }
+    if (q) return renderSearch(q);
+    const [top, ...rest] = list, t = top.toc || {};
+    let h = `<a class="feat" href="${url(top)}" data-i="0"><div class="img" data-ph="f"><span class="badge">${esc(L('Latest', 'Dernier numéro'))}${(top.no || t.no) ? ' · No. ' + esc(top.no || t.no) : ''}</span></div><div class="tx">
+      <div class="k">${esc(fmt(top, { weekday: 'long', day: 'numeric', month: 'long' }))}${t.kicker ? ' · ' + esc(t.kicker.replace(/^Breaking\s*·\s*/i, '')) : ''}</div>
+      <h2>${esc(head(top))}</h2>${t.dek ? `<p>${esc(t.dek)}</p>` : ''}
+      <div class="go"><span class="btn fill">${L('Read', 'Lire')}</span><button class="btn tint" data-sheet="0">${L('In this issue', 'Au sommaire')}</button></div></div></a>`;
+    const groups = {};
+    rest.forEach((i, k) => { const g = new Date(i.date + 'T12:00').toLocaleDateString(loc, { month: 'long', year: 'numeric' }); (groups[g] = groups[g] || []).push([i, k + 1]); });
+    for (const g in groups) h += `<h2 class="gh">${esc(g.charAt(0).toUpperCase() + g.slice(1))}</h2><div class="group">${groups[g].map(([i, k]) => rowHtml(i, k)).join('')}</div>`;
+    h += `<p class="foot">${L('Tap and hold an issue, or tap ›, to see everything inside.', 'Touche › pour voir tout le sommaire.')}</p>`;
+    v.innerHTML = h;
+    v.querySelectorAll('[data-ph]').forEach(b => { const k = b.dataset.ph === 'f' ? 0 : +b.dataset.ph; const t2 = list[k].toc; if (t2 && t2.photo) photoUrl(t2.photo).then(u => putImg(b, u)); });
+    bindRows(v);
+  }
+  function bindRows(v) {
+    v.querySelectorAll('[data-sheet]').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); openSheet(list[+b.dataset.sheet]); });
+    v.querySelectorAll('.row .ch').forEach(c => c.onclick = e => { e.preventDefault(); e.stopPropagation(); openSheet(list[+c.closest('.row').dataset.i]); });
+    v.querySelectorAll('.row').forEach(r => { let t = 0; r.addEventListener('touchstart', () => { t = setTimeout(() => { t = -1; openSheet(list[+r.dataset.i]); }, 450); }, { passive: true });
+      r.addEventListener('touchend', e => { if (t === -1) e.preventDefault(); clearTimeout(t); }); r.addEventListener('touchmove', () => clearTimeout(t), { passive: true }); r.addEventListener('contextmenu', e => e.preventDefault()); });
+  }
+  function renderSearch(q) {
+    const v = $('libv'), words = q.toLowerCase().split(/\s+/).filter(Boolean), hits = [];
+    const match = s => { const l = (s || '').toLowerCase(); return words.every(w => l.includes(w)); };
+    const mark = s => { let out = esc(s); words.forEach(w => { const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'); out = out.replace(re, '<mark>$1</mark>'); }); return out; };
+    list.forEach((i, k) => {
+      const t = i.toc || {};
+      if (match(head(i)) || match(t.dek)) hits.push({ i, k, s: 'front', title: L('Front page', 'À la une'), h: head(i) });
+      (t.sections || []).forEach(sec => sec.heads.forEach(h => { if (match(h)) hits.push({ i, k, s: sec.key, title: sec.title, acc: sec.accent, h }); }));
+    });
+    if (!hits.length) { v.innerHTML = `<p class="empty">${L('No headline matches', 'Aucun titre ne correspond à')} “${esc(q)}”.</p>`; return; }
+    v.innerHTML = `<h2 class="gh">${hits.length} ${hits.length === 1 ? L('result', 'résultat') : L('results', 'résultats')}</h2><div class="group res">` + hits.slice(0, 120).map(x =>
+      `<a class="row" href="${url(x.i, x.s === 'front' ? '' : x.s)}"><div class="th" style="background:var(${esc(x.acc || ACC[x.s] || '--a-front')})">${esc(x.i.no || (x.i.toc && x.i.toc.no) || '')}</div><div class="tx">
+      <div class="m">${esc(x.title)} · ${esc(fmt(x.i))}</div><div class="h">${mark(x.h)}</div></div><span class="ch" style="pointer-events:none">›</span></a>`).join('') + '</div>';
+  }
+  function openSheet(i) {
+    if (!i) return;
+    const t = i.toc || {}, el = document.createElement('div'); el.id = 'sheet';
+    const secs = (t.sections || []).map((s, k) => `<div class="sec"><button data-k="${k}"><span class="ic" style="background:var(${esc(s.accent || ACC[s.key] || '--a-back')})">${k + 2}</span><span class="tt">${esc(s.title)}</span><span class="ct">${s.heads.length || ''}</span><span class="ch">›</span></button>
+      <ul>${s.heads.map(h => `<li data-s="${esc(s.key)}">${esc(h)}</li>`).join('')}</ul></div>`).join('');
+    el.innerHTML = `<div class="sh" role="dialog" aria-modal="true"><div class="gr"><span>${esc(fmt(i, { weekday: 'long', day: 'numeric', month: 'long' }))}</span><button class="x" aria-label="${L('Close', 'Fermer')}">✕</button></div><div class="in">
+      ${t.photo ? '<div class="hero" id="shero"></div>' : ''}
+      <div class="k">${(i.no || t.no) ? 'No. ' + esc(i.no || t.no) + ' · ' : ''}${esc(edLabel(i) || L('Daily', 'Quotidien'))}${t.kicker ? ' · ' + esc(t.kicker.replace(/^Breaking\s*·\s*/i, '')) : ''}</div>
+      <h2>${esc(head(i))}</h2>${t.dek ? `<p class="dek">${esc(t.dek)}</p>` : ''}
+      <div class="go"><a class="btn fill" href="${url(i)}">${L('Read this issue', 'Lire ce numéro')}</a></div>
+      ${t.five && t.five.length ? `<h3>${L('The day in five lines', 'La journée en cinq lignes')}</h3><div class="card five">${t.five.map(p => `<p>${esc(p).replace(/^(\d)\s*/, '<b>$1</b>')}</p>`).join('')}</div>` : ''}
+      ${t.number && t.number.big ? `<div class="card nod"><span class="lb">${L('Number of the day', 'Le chiffre du jour')}</span><span class="big">${esc(t.number.big)}</span><p>${esc(t.number.text)}</p></div>` : ''}
+      ${secs ? `<h3>${L('In this issue', 'Au sommaire')}</h3><div class="secs">${secs}</div>` : `<p class="empty">${L('Contents are not available for this issue.', 'Sommaire indisponible pour ce numéro.')}</p>`}
+    </div></div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
+    const close = () => { el.classList.remove('on'); setTimeout(() => el.remove(), 450); };
+    el.querySelector('.x').onclick = close; el.addEventListener('click', e => { if (e.target === el) close(); });
+    el.querySelectorAll('.sec > button').forEach(b => b.onclick = () => b.parentElement.classList.toggle('open'));
+    el.querySelectorAll('.sec li').forEach(li => li.onclick = () => { location.href = url(i, li.dataset.s); });
+    if (t.photo) photoUrl(t.photo).then(u => putImg($('shero'), u));
+    const sh = el.querySelector('.sh'); let y0 = null, dy = 0;
+    sh.addEventListener('touchstart', e => { y0 = sh.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+    sh.addEventListener('touchmove', e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) { sh.style.transition = 'none'; sh.style.transform = 'translateY(' + dy + 'px)'; } }, { passive: true });
+    sh.addEventListener('touchend', () => { if (y0 == null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 110) close(); y0 = null; });
+  }
+
+  // ---------------- route ----------------
+  let key = null;
+  try { key = await savedKey(); } catch (e) { store.del(KEYNAME); }
+  if (wantLib) {
+    if (key) return library(key);
+    return lock(k => library(k));
+  }
+  if (!list.length) { await splashReady(); $('sd').textContent = L('No issue yet. The first one arrives at 07:00.', 'Pas encore de numéro. Le premier arrive à 7 h.'); return; }
+  const issue = list.find(i => i.id === qs.get('d')) || list[0];
+  $('sd').textContent = fmt(issue, { weekday: 'long', day: 'numeric', month: 'long' }) + (issue.no ? ' · No. ' + issue.no : '');
+  if (key) { try { return show(await openIssue(key, issue)); } catch (e) { store.del(KEYNAME); } }
+  lock((k, html) => show(html));
 })();
 </script>
 </body></html>

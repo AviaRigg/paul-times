@@ -88,7 +88,7 @@ Never two in the same section.
 
 ## Steps
 
-1. `pip install --break-system-packages -q cryptography pillow` if missing.
+1. `pip install --break-system-packages -q cryptography pillow beautifulsoup4` if missing (bs4 builds the Library contents).
 2. Research every section (below) with web search. Search for each section separately; prefer
    original sources. Verify numbers against a second source when they disagree; if they still
    disagree, say so in the copy ("snapshot, treat as approximate"). Never invent a figure.
@@ -145,6 +145,16 @@ Never two in the same section.
    Never commit `build/` or the password. Never print the password in commit messages.
 9. Wait about 90 seconds, then confirm `<site URL from README.md>/issues.json`
    lists the new id. Report the headline and anything that failed in one short message.
+
+## Design (since 20 Oct 2026, Paul's request: "a complete app made by Apple")
+
+The look lives in `docs/app.css` (design system: SF type, iOS system colours, grouped cards, frosted bars, sheets) and
+`docs/app.js` (motion, collapsing navigation bars). `kit/template.html` only links them, so a design change restyles
+every issue at once without rebuilding. Never put inline styles or fonts in `sections.html`; use the building blocks
+below and let the stylesheet do the rest. `docs/index.html` is the lock screen (iOS passcode pad) and the Library
+(`?archive`): every issue with its lead photo, headline, the day in five lines and every headline by section, searchable,
+decrypted on the phone from the sealed `toc` that `kit/build.py` writes into `docs/issues.json`. Deep links:
+`./?d=<id>&s=<section key>` opens an issue at a section. Bump the `?v=` on app.css / app.js when you change them.
 
 ## Sections (in this order)
 

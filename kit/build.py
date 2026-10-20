@@ -90,10 +90,55 @@ json.dump({"v": 1, "iv": base64.b64encode(siv).decode(),
 json.dump({"v": 1, "iv": base64.b64encode(iv).decode(), "ct": base64.b64encode(ct).decode()},
           open(os.path.join(ROOT, "docs", "issues", a.id + ".enc"), "w"))
 
+# Encrypted contents for the Library (index.html ?archive): issue number, lead, photo and every headline by section.
+# Only the issue number and title stay readable in issues.json; everything else is sealed with the same key.
+def contents(src):
+    try:
+        from bs4 import BeautifulSoup
+    except Exception:
+        print("WARNING: bs4 missing, the Library will show this issue without its contents")
+        return None
+    soup = BeautifulSoup(src, "html.parser")
+    for t in soup.find_all("template"):
+        t.decompose()
+    clean = lambda el: re.sub(r"\s+", " ", el.get_text(" ")).strip() if el else ""
+    out = {"sections": []}
+    m = re.search(r"No\.\s*(\d+)", src)
+    out["no"] = int(m.group(1)) if m else None
+    front = soup.find("section", attrs={"data-key": "front"})
+    if front:
+        lead = front.select_one(".lead")
+        if lead:
+            out["kicker"] = clean(lead.select_one(".kicker")); out["lead"] = clean(lead.find("h1")); out["dek"] = clean(lead.select_one(".dek"))
+        fig = front.select_one("figure.photo")
+        if fig:
+            out["photo"] = {k: fig.get("data-" + k) for k in ("src", "wiki", "file") if fig.get("data-" + k)}
+        out["five"] = [clean(p) for p in front.select(".five p")]
+        nod = front.select_one(".fun .big")
+        if nod:
+            out["number"] = {"big": clean(nod), "text": clean(nod.find_parent(class_="fun").find("p"))}
+    for sec in soup.find_all("section"):
+        if sec.get("data-key") == "front":
+            continue
+        heads = []
+        for h in sec.select(".head h3, .brief h4, .box > h4, .fun .lbl"):
+            t = clean(h)
+            if t and t not in heads:
+                heads.append(t)
+        out["sections"].append({"key": sec.get("data-key"), "title": sec.get("data-title"), "accent": sec.get("data-accent"), "heads": heads[:40]})
+    return out
+
+toc = contents(sections)
 idx_path = os.path.join(ROOT, "docs", "issues.json")
 idx = json.load(open(idx_path)) if os.path.exists(idx_path) else []
 idx = [i for i in idx if i["id"] != a.id]
-idx.append({"id": a.id, "date": date.isoformat(), "edition": a.edition, "title": a.title})
+entry = {"id": a.id, "date": date.isoformat(), "edition": a.edition, "title": a.title}
+if toc:
+    if toc.get("no"):
+        entry["no"] = toc["no"]
+    tiv = os.urandom(12)
+    entry["toc"] = {"iv": base64.b64encode(tiv).decode(), "ct": base64.b64encode(AESGCM(key).encrypt(tiv, json.dumps(toc, ensure_ascii=False).encode("utf-8"), None)).decode()}
+idx.append(entry)
 idx.sort(key=lambda i: (i["date"], i["edition"] == "weekly"), reverse=True)
 json.dump(idx, open(idx_path, "w"), indent=1)
 print("built", a.id, f"{len(html)//1024} KB", "->", "docs/issues/" + a.id + ".enc")
