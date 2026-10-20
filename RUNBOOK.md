@@ -146,15 +146,16 @@ Never two in the same section.
 9. Wait about 90 seconds, then confirm `<site URL from README.md>/issues.json`
    lists the new id. Report the headline and anything that failed in one short message.
 
-## Design (since 20 Oct 2026, Paul's request: "a complete app made by Apple")
+## Design (since 20 Oct 2026, Paul's request: "an app Apple would make, but a newspaper")
 
-The look lives in `docs/app.css` (design system: SF type, iOS system colours, grouped cards, frosted bars, sheets) and
-`docs/app.js` (motion, collapsing navigation bars). `kit/template.html` only links them, so a design change restyles
-every issue at once without rebuilding. Never put inline styles or fonts in `sections.html`; use the building blocks
-below and let the stylesheet do the rest. `docs/index.html` is the lock screen (iOS passcode pad) and the Library
-(`?archive`): every issue with its lead photo, headline, the day in five lines and every headline by section, searchable,
-decrypted on the phone from the sealed `toc` that `kit/build.py` writes into `docs/issues.json`. Deep links:
-`./?d=<id>&s=<section key>` opens an issue at a section. Bump the `?v=` on app.css / app.js when you change them.
+The look is an Apple-made newspaper, not a settings app: white paper (black in dark mode), New York serif headlines and
+body text, SF Pro for labels, kickers and controls, hairline rules between stories, full-bleed photos, grey panels only
+for feature boxes and widgets, section colour used sparingly in kickers. It lives in `docs/app.css` and `docs/app.js`;
+`kit/template.html` only links them, so a design change restyles every issue at once. Never put inline styles or fonts
+in `sections.html`; use the building blocks below. `docs/index.html` is the lock screen (iOS passcode pad) and the
+Library (`?archive`): today's paper as a miniature front page, older issues as a newsstand of front pages, every
+headline searchable, contents per issue, decrypted on the phone from the sealed `toc` that `kit/build.py` writes into
+`docs/issues.json`. Deep links: `./?d=<id>&s=<section key>`. Bump the `?v=` on app.css / app.js when you change them.
 
 ## Sections (in this order)
 
