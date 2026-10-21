@@ -155,7 +155,7 @@ for feature boxes and widgets, section colour used sparingly in kickers. It live
 in `sections.html`; use the building blocks below. `docs/index.html` is the lock screen (iOS passcode pad) and the
 Library (`?archive`): today's paper as a miniature front page, older issues as a newsstand of front pages, every
 headline searchable, contents per issue, decrypted on the phone from the sealed `toc` that `kit/build.py` writes into
-`docs/issues.json`. Deep links: `./?d=<id>&s=<section key>`. Bump the `?v=` on app.css / app.js when you change them.
+`docs/issues.json`. The app opens on the Library (Paul's request, 20 Oct 2026); an issue opens from `./?d=<id>`, deep links `./?d=<id>&s=<section key>`. Bump the `?v=` on app.css / app.js when you change them.
 
 ## Sections (in this order)
 

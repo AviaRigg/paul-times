@@ -175,7 +175,7 @@ body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
 </div>
 
 <div id="lib" hidden>
-  <div class="nav" id="nav"><a href="./" id="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span>Today</span></a><div class="st">Library</div><span></span></div>
+  <div class="nav" id="nav"><span></span><div class="st">Library</div><a href="./" id="today"><span>Today's paper</span></a></div>
   <h1 class="lt">Library</h1>
   <div class="ltsub" id="lsub"></div>
   <label class="search" id="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg>
@@ -197,8 +197,9 @@ body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
   const get = async p => { const r = await fetch(p + (p.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw new Error(p + ' ' + r.status); return r.json(); };
   const loc = FR ? 'fr-FR' : 'en-GB';
   const fmt = (i, o) => new Date(i.date + 'T12:00:00').toLocaleDateString(loc, o || { weekday: 'short', day: 'numeric', month: 'short' });
-  const t0 = Date.now(), wantLib = qs.has('archive');
-  const minSplash = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (wantLib ? 450 : 1100);
+  // The app opens on the Library; an issue opens only from ./?d=<id> (Library, links, the in-issue Library button goes back here).
+  const t0 = Date.now(), wantLib = qs.has('archive') || !qs.has('d');
+  const minSplash = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (qs.has('archive') ? 450 : wantLib ? 900 : 700);
   const splashReady = () => new Promise(r => setTimeout(r, Math.max(0, minSplash - (Date.now() - t0))));
   const splashOut = () => { const e = $('splash'); if (!e) return; e.classList.add('out'); setTimeout(() => e.remove(), 600); };
   $('sd').textContent = new Date().toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long' });
@@ -282,7 +283,7 @@ body.home.scroll { overflow: auto; height: auto; min-height: 100%; }
     splashReady().then(splashOut);
     document.body.classList.add('scroll');
     $('lock').hidden = true; const lib = $('lib'); lib.hidden = false;
-    $('today').querySelector('span').textContent = L('Today', 'Aujourd\'hui');
+    $('today').querySelector('span').textContent = L('Today\'s paper', 'Le journal du jour'); if (list[0]) $('today').href = url(list[0]);
     lib.querySelector('.lt').textContent = L('Library', 'Bibliothèque'); lib.querySelector('.nav .st').textContent = L('Library', 'Bibliothèque');
     $('q').placeholder = L('Search every headline', 'Chercher dans tous les titres');
     // decrypt every issue's contents (small, cached for the session)
