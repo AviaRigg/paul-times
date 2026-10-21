@@ -64,6 +64,7 @@ template.more { display: none; }
 #tov .trailer, #tov .vid { margin-left: -18px; margin-right: -18px; background: #000; aspect-ratio: 16 / 9; position: relative; }
 #tov .vid { margin-bottom: 28px; }
 #tov .vid > span { position: absolute; top: 100%; left: 18px; right: 18px; font-size: 13px; color: var(--muted); font-style: italic; padding-top: 4px; line-height: 1.3; }
+#tov .vid.ext { aspect-ratio: auto; background: none; margin-left: 0; margin-right: 0; }
 #tov .trailer iframe, #tov .vid iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 #tov .trailer.none { display: flex; align-items: center; justify-content: center; text-decoration: none; color: #fff; flex-direction: column; gap: 8px;
   background: linear-gradient(135deg, var(--accent), #000); }
@@ -127,8 +128,24 @@ template.more { display: none; }
     sh.addEventListener('touchend', () => { if (y0 == null) return; sh.style.transition = ''; sh.style.transform = ''; if (dy > 110) close(); y0 = null; });
     return el;
   }
-  const embed = (id, title) => `<iframe src="https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&modestbranding=1" title="${esc(title)}"
+  const ORIGIN = /^https?:/.test(location.origin) ? '&enablejsapi=1&origin=' + encodeURIComponent(location.origin) : '';
+  const embed = (id, title) => `<iframe src="https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&modestbranding=1${ORIGIN}" title="${esc(title)}"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  // Trailer guard: YouTube's player reports errors 2/5/100 (bad or removed video) and 101/150/153
+  // (owner disabled embedding). On any of them the caller swaps the player for a YouTube link,
+  // so an id that cannot play inside the paper never shows a dead box.
+  let ytApi = null;
+  const ytReady = () => ytApi || (ytApi = new Promise(res => {
+    if (window.YT && window.YT.Player) return res(window.YT);
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) try { prev(); } catch (e) {} res(window.YT); };
+    const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; sc.async = true; sc.onerror = () => res(null);
+    document.head.appendChild(sc); setTimeout(() => res(window.YT && window.YT.Player ? window.YT : null), 8000);
+  }));
+  function guard(frame, onBad) {
+    if (!frame || !ORIGIN) return;
+    ytReady().then(Y => { if (!Y || !Y.Player || !frame.isConnected) return; try { new Y.Player(frame, { events: { onError: e => onBad(e && e.data) } }); } catch (err) {} });
+  }
 
   // photos and videos inside a sheet
   async function sheetPhoto(fig) {
@@ -151,7 +168,7 @@ template.more { display: none; }
   }
   function wire(el) {
     el.querySelectorAll('.in figure.photo').forEach(f => sheetPhoto(f));
-    el.querySelectorAll('.in .vid[data-yt]').forEach(v => { const id = ytId(v.dataset.yt); if (!id) return v.remove(); v.insertAdjacentHTML('afterbegin', embed(id, txt(v) || 'Video')); const t = new Image(); t.onload = () => { if (t.naturalWidth <= 120) v.remove(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; });
+    el.querySelectorAll('.in .vid[data-yt]').forEach(v => { const id = ytId(v.dataset.yt); if (!id) return v.remove(); v.insertAdjacentHTML('afterbegin', embed(id, txt(v) || 'Video')); guard(v.querySelector('iframe'), code => { const f = v.querySelector('iframe'); if (!f) return; if (code === 101 || code === 150 || code === 153) { const a = document.createElement('a'); a.className = 'yt'; a.href = 'https://www.youtube.com/watch?v=' + id; a.target = '_blank'; a.rel = 'noopener'; a.textContent = L('Watch on YouTube ›', 'Voir sur YouTube ›'); f.replaceWith(a); v.classList.add('ext'); } else v.remove(); }); const t = new Image(); t.onload = () => { if (t.naturalWidth <= 120) v.remove(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; });
     el.querySelectorAll('.in a[href]').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
   }
 
@@ -249,7 +266,7 @@ template.more { display: none; }
         <div class="fx">${facts.length ? `<ul class="facts">${facts.map(f => `<li><b>${esc(f[0])}</b><span>${esc(f[1])}</span></li>`).join('')}</ul>` : ''}</div>
         ${d.buttons ? `<div class="btns">${d.buttons}</div>` : ''}
         ${d.link ? `<a class="more" href="${esc(d.link)}" target="_blank" rel="noopener">${L('More ›', 'En savoir plus ›')}</a>` : ''}`, d.t);
-    if (id) { const t = new Image(), bad = () => { const w = el.querySelector('.trailer'), y = el.querySelector('a.yt'); if (y) y.remove(); if (w) w.outerHTML = `<a class="trailer none" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener"><div class="pl">▶</div><span>${L('Find the trailer on YouTube', 'Trouver la bande-annonce sur YouTube')}</span></a>`; }; t.onload = () => { if (t.naturalWidth <= 120) bad(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; }
+    if (id) { const t = new Image(), bad = () => { const w = el.querySelector('.trailer'), y = el.querySelector('a.yt'); if (y) y.remove(); if (w) w.outerHTML = `<a class="trailer none" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener"><div class="pl">▶</div><span>${L('Find the trailer on YouTube', 'Trouver la bande-annonce sur YouTube')}</span></a>`; }; t.onload = () => { if (t.naturalWidth <= 120) bad(); }; t.src = 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg';  guard(el.querySelector('.trailer iframe'), code => { if (code === 101 || code === 150 || code === 153) { const w = el.querySelector('.trailer'), y = el.querySelector('a.yt'); if (y) y.remove(); if (w) w.outerHTML = `<a class="trailer none" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener"><div class="pl">▶</div><span>${L('Plays on YouTube only: tap to watch', 'Lecture sur YouTube uniquement : touche pour voir')}</span></a>`; } else bad(); }); }
     const img = el.querySelector('img.pst'); if (img) img.onerror = () => { const ph = document.createElement('div'); ph.className = 'pst ph'; ph.textContent = d.t; img.replaceWith(ph); };
     el.querySelectorAll('.btns button[data-a]').forEach(b => b.onclick = () => { const t = d.card && d.card.querySelector('.btns button[data-a="' + b.dataset.a + '"]'); close(); if (t) t.click(); });
     if (!d.about) liveInfo(d.specs, d.t).then(v => {

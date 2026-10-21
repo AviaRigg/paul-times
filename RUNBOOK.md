@@ -263,9 +263,13 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    - **Lead**: the biggest film or TV story of the day in his lanes (a trailer, a release, box
      office, a casting, a renewal), with a photo (poster or still via the article's lead image).
    - **Rotten Tomatoes box**: table of recent releases in his lanes (last 4 to 6 weeks): title,
-     Tomatometer %, Popcornmeter %, one-word verdict. Get scores from rottentomatoes.com (WebFetch
-     the film page); if it cannot be read, use a news report that quotes the scores and say
-     "via <source>". Never invent a score; write "n/a" if none found.
+     Tomatometer %, Popcornmeter %, one-word verdict. Rotten Tomatoes pages load their scores with
+     JavaScript, so a WebFetch of rottentomatoes.com returns no numbers (tested 21 Oct 2026): do not
+     try it. Instead: for a new release, WebSearch "<title> Rotten Tomatoes score" and WebFetch a news
+     report from the results that quotes it (say "via <outlet>"); for an older film, WebSearch
+     "<title> <year> film Wikipedia" and WebFetch the article, whose Reception section gives the
+     Tomatometer ("98% of 136 critics' reviews are positive"). Never invent a score; write "n/a" if
+     none found. Picks get an "rt" only from one of these two routes.
    - **Coming soon**: next releases in his lanes with Netherlands cinema date (Pathé/Vue
      Amsterdam, original version) and France date for French films; streaming premieres with
      platform (Netflix, Disney+, Prime Video, Max).
@@ -274,7 +278,9 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
    - **Tonight's pick + My list** (always last): 5 picks he probably has not seen, best first,
      matched to his taste (comedy like B99 and Modern Family, adult animation like Rick and Morty,
      legal drama like Suits, Star Wars, Marvel, great animation films), with where to stream in the
-     Netherlands and why in one line:
+     Netherlands and why in one line. "where" must be checked: WebSearch "binge.nl <title>" (or
+     "tvgids.nl <title>") and WebFetch the result, which lists the Dutch services (Netflix, Videoland,
+     NPO Start, Prime Video, Pathé Thuis...). Ask research agents for this per pick:
      `<div class="pick blk" data-pick='[{"t":"Title","y":"2021","kind":"Animated series","where":"Netflix","rt":"100%","why":"Why HE would like it","img":"optional image URL","link":"optional URL"}]'></div>`
      then `<div class="mylist blk" data-mylist></div>`.
      The pick list sits in a single-quoted attribute: write every apostrophe inside it as `&#39;`
@@ -302,14 +308,17 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
      prompt "List every YouTube video id or youtube.com/embed or watch URL in this page, verbatim".
      Prefer the studio's or streamer's official channel (Disney, Pixar, Netflix, Marvel, Sony
      Pictures, Universal, Paramount, Warner Bros., LAIKA, Pathé, Gaumont...), the latest main
-     trailer, the English original version (French films: the French trailer). Verify it with
-     WebFetch (NOT curl: the sandbox proxy blocks youtube.com) of
-     `https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=<id>`:
-     a title and an official author_name means OK; 401 means embedding is disabled (find another
-     official upload); 404 means wrong id. Never invent an id. Only if no official id exists at all,
-     leave it out and the sheet offers a YouTube search button instead.
-     Safety: `docs/screen-overlay.js` checks the video's thumbnail on Paul's phone and swaps a dead id
-     for the search button, so a verified id never costs anything.
+     trailer, the English original version (French films: the French trailer). The id counts as
+     verified when it is copied verbatim from an embed in an article about that exact trailer (the
+     article names the film and the trailer, and ideally the channel). Do NOT WebFetch the YouTube
+     oEmbed, embed or watch URL: a hand-built youtube.com address needs a manual approval that nobody
+     can give during a scheduled run (21 Oct 2026), and the embed page needs JavaScript anyway.
+     Never invent an id. Only if no article embeds an official trailer, leave it out and the sheet
+     offers a YouTube search button instead.
+     Safety (since 21 Oct 2026): `docs/screen-overlay.js` checks each id on Paul's phone. A dead
+     thumbnail or a YouTube player error 2, 5 or 100 swaps it for the search button; error 101, 150
+     or 153 (owner disabled embedding) swaps it for a "Plays on YouTube only" link. So an id taken
+     from an official embed never shows a broken box.
    - Videos in tap-for-more sheets (`<div class="vid" data-yt="<id>">`) use the same method: add one
      to every big story that has an official video (trailer, press conference, onboard lap, launch).
    - Synopsis: 2 to 3 sentences of your own, no spoilers beyond the first act.
@@ -333,6 +342,33 @@ Each section is a `<section data-key data-title data-accent>` in `sections.html`
     clickable link to the exact article used, `<a href="URL">Outlet: article title</a>`, never a bare
     outlet name, so Paul can check any fact), the "Past issues" link exactly as `<a href="./?archive">Past issues →</a>` (plain `./` just reopens today), footer note, and always ends with
     the feedback box `<div class="feedback blk" data-feedback></div>`.
+
+## Fetching in unattended runs (since 21 Oct 2026)
+
+Nobody can tap "Allow" during a scheduled run, so every web read must work without approval. The
+scheduled tasks already run with automatic approval, but the WebFetch tool still asks a human for any
+address it did not receive from a search result or a page it read: hand-built URLs (an oEmbed link,
+a "/m/title" Rotten Tomatoes path, a site's home page, a date page like ".../2026/10/20/") stall
+until the request times out and the agent loses the item. Rules, for you and for every research agent
+(copy them into each agent's prompt):
+1. **Search first, then fetch.** Only WebFetch a URL that appeared verbatim in a WebSearch result or
+   in a page you already fetched in the same agent. Never type, guess or edit a URL. If the page you
+   need did not come up, search again with the outlet's name in the query.
+2. **Do not spend searches on blocked sites.** These cannot be read at all (blocked or robots.txt,
+   tested 20 to 21 Oct 2026): ledauphine.com, lemessager.fr, franceinfo.fr, france3-regions,
+   ici.fr (France Bleu), cnews.fr, coindesk.com articles, cointelegraph, stockanalysis.com,
+   rottentomatoes.com scores, youtube.com pages. Use them only as headlines when a search result
+   names them, and cite the article you actually read.
+   - French politics instead of franceinfo: Public Sénat, LCP, Le Monde, Les Echos, 20 Minutes,
+     Ouest-France, Le Figaro, Le Parisien, BFMTV, Brut (via search).
+   - Annecy and Haute-Savoie instead of Le Dauphiné and Le Messager: ODS Radio (odsradio.com, which
+     has photos), faitsdivers365.fr (aggregator of Dauphiné and Messager headlines), actu.fr,
+     8 Mont-Blanc, Radio Mont-Blanc, annecy.fr and grand-annecy.fr, Haute-Savoie prefecture. Search
+     "odsradio Annecy <topic>" or "<town> <topic> octobre 2026". The local lead photo comes from the
+     first of these that has one; only if none does, use a `data-wiki` place photo marked "File photo".
+3. **curl** is for checking a URL you already have (image status codes, job links), never for reading
+   a page that WebFetch could not read.
+4. In the final report, list what could not be read and which fallback you used.
 
 ## Writing rules
 
@@ -426,7 +462,7 @@ A "More ›" marker appears on the headline automatically.
   timeline `<ol class="tl">` when the story has history, an extra photo different from the printed one,
   and a video when there is a real one (press conference, onboard lap, game or film trailer,
   launch footage, official channel only): `<div class="vid" data-yt="<id>"><span>Caption</span></div>`,
-  id verified with the oEmbed check in the Screen section; never invent one.
+  id taken from an article embed as in the Screen section; never invent one.
 - **Feature boxes** (Stock of the day, Radar, Tool of the week, Lisnard watch, Tech desk, Australia
   corner, Rigging job board) also get one: more numbers, the full case for and against, links.
   Tables and scoreboards with nothing more to say get none.
