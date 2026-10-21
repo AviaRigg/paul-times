@@ -11,7 +11,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="app.css?v=5">
+<link rel="stylesheet" href="app.css?v=6">
 
 </head><body>
 <div id="app">
@@ -52,9 +52,10 @@ document.documentElement.lang = FR ? 'fr' : 'en';
     const landscape = matchMedia('(orientation: landscape)').matches;
     const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
     const vis = Math.round(Math.max(window.innerHeight, window.visualViewport ? visualViewport.height : 0));
-    // iOS 26 Home Screen apps report a height one status bar short (852 screen, 793 reported) while the page
-    // really covers the whole screen; use the full screen so pages and the toolbar reach the bottom edge.
-    app.style.height = Math.max(vis, full) + 'px';
+    app.style.height = (vis < full * 0.85 ? full : vis) + 'px';
+    // iOS 26 Home Screen apps: the drawable area stops one status bar short of the screen bottom (793 of 852 pt),
+    // and the home indicator lies outside it. Then sit the toolbar just above the visible bottom edge.
+    document.documentElement.style.setProperty('--pf-b', vis < full - 20 ? '10px' : '');
     // WebKit bug 301994: the web layer stops short of the screen bottom, so the home-indicator padding is already outside it.
     app.style.paddingBottom = vis < full - 20 ? '0px' : '';
     if (window.scrollY && !typing()) window.scrollTo(0, 0);
@@ -727,5 +728,5 @@ document.documentElement.lang = FR ? 'fr' : 'en';
 })();
 </script>
 <script src="screen-overlay.js?v=4"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body></html>
