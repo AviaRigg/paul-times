@@ -36,6 +36,6 @@ bad = [f for f in staged if f.endswith("sections.html") or "/parts/" in f or f.e
 if bad:
     run("git", "reset", "-q")
     sys.exit("refusing to commit plain-text files: " + ", ".join(bad))
-run("git", "commit", "-m", f"Issue {iid}", check=False)
+run("git", "commit", "-m", f"Issue {iid}", "-m", "Co-Authored-By: Claude <noreply@anthropic.com>", check=False)
 run("git", "push")
 print("pushed; the site updates in about 90 seconds")
