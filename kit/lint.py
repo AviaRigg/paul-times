@@ -111,6 +111,22 @@ if fix:
 elif re.search("[—–]", src):
     notes.append("em or en dashes present (run with --fix)")
 
+# images are mandatory (Paul's rule, 31 Oct 2026: the front shipped with a data-wiki file photo that never showed)
+front = soup.find("section", attrs={"data-key": "front"})
+if front is not None:
+    live = [f for f in front.select("figure.photo[data-src]") if f["data-src"] not in dead]
+    if not live:
+        block.append("front: no verified news photo. The front lead needs a figure.photo with data-src (curl 200) "
+                     "from a news article; a data-wiki file photo alone is not enough")
+for sec in soup.find_all("section"):
+    k = sec.get("data-key")
+    if k in ("front", "week", "back"):
+        continue
+    if not [f for f in sec.select("figure.photo, figure.poster") if f.get("data-src") not in dead or f.get("data-wiki")]:
+        block.append(f"{k}: no photo at all (every section lead needs a real photo)")
+    elif not [f for f in sec.select("figure.photo[data-src]") if f["data-src"] not in dead]:
+        notes.append(f"{k}: only file photos (data-wiki); find a real news photo with data-src")
+
 print("BLOCKING:" if block else "no blocking problems")
 for b in block:
     print("  ! " + b)

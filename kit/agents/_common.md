@@ -95,6 +95,9 @@ Check before publishing: for every `data-src` URL run
 the site itself means find another image. `000` (blocked by this session's network) means you
 cannot check, so keep it. Report how many images you checked and how many you dropped.
 
+Images are mandatory (Paul's rule, 31 Oct 2026): your section lead MUST have a real news photo with `data-src`
+(curl 200), not only a `data-wiki` file photo; spend page reads on lead photos before secondary details. `kit/lint.py`
+blocks a section with no photo and flags sections with only file photos.
 Volume: daily 12 to 20 images, Sunday 25 or more. Front lead always has one. Every section
 lead has one. Never use a photo of a different event as if it showed today's news; say
 "File photo" in the caption when the image is not of the event itself.

@@ -63,6 +63,16 @@ word of `parts/front.html`:
    the lead and #2 and #3 for the two teasers.
 4. When a big story breaks after the first push, re-rank and republish.
 
+**Images are mandatory (Paul's rule, 31 Oct 2026, after the front shipped with an invisible image).**
+1. **Front lead:** always a real news photo with `data-src` (plus `data-credit`, `data-link`), taken from a news article about
+   that exact story and checked with curl (200). A `data-wiki` file photo alone is NOT allowed on the front: it can fail
+   silently and leave the front page without an image. `kit/lint.py` blocks shipping when the front has no live `data-src` photo.
+2. **Every section lead** has a photo (lint blocks a section with none). Prefer `data-src` news photos everywhere; lint lists
+   sections that only have `data-wiki` file photos, and the editor fixes those in the deepen pass before 07:00.
+3. **Volume:** 12 to 20 photos per daily, and at least one per big story. If an agent comes back thin on photos, the editor
+   runs one photo pass (a Sonnet agent, capped searches) before the final ship.
+4. Before the final report, open the front in `kit/preview_check.py` or check the front photo URL with curl yourself.
+
 ## Run order (the daily routine; every step is one or two tool calls)
 
 Set once: `export TPT_PASSWORD=<code from your task instructions>` (never print it or commit it). `<id>` is the morning's date; Sunday uses `--edition sunday` everywhere.
