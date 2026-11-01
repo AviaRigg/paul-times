@@ -32,7 +32,7 @@ def line(el, depth):
     kids = [c for c in el.find_all(recursive=False) if c.name != "template"]
     inner = ""
     if el.name != "p" and kids and depth < 2:
-        inner = "  ⊃ " + " ".join(sorted({sig(c).split(" ")[0] for c in kids}))[:90]
+        inner = "  ⊃ " + " ".join(dict.fromkeys(sig(c).split(" ")[0] for c in kids))[:90]
     more = " +more" if el.find("template", class_="more") else ""
     return f'{pad}{sig(el)}{more}  "{words(el)}"{inner}'
 

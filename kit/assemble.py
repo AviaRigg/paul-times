@@ -24,11 +24,25 @@ edition = "sunday" if "--edition" in sys.argv and sys.argv[sys.argv.index("--edi
 parts = os.path.join(ROOT, "issues", iid, "parts")
 date = dt.date.fromisoformat(iid[:10])
 
-ORDER = [("front", "Front", "--a-front"), ("world", "World", "--a-world"), ("france", "France", "--a-france"),
+ORDER = [("front", "Front page", "--a-front"), ("world", "The World", "--a-world"), ("france", "France", "--a-france"),
          ("local", "Local", "--a-local"), ("markets", "Markets", "--a-markets"), ("crypto", "Crypto", "--a-crypto"),
-         ("tech", "Tech & AI", "--a-tech"), ("craft", "Craft", "--a-craft"), ("sport", "Sport", "--a-sport"),
+         ("tech", "Tech and AI", "--a-tech"), ("craft", "The Craft", "--a-craft"), ("sport", "Sport", "--a-sport"),
          ("screen", "Screen", "--a-screen"), ("sunday", "The Sunday Read", "--a-week"),
-         ("week", "The Week Ahead", "--a-week"), ("back", "Back Page", "--a-back")]
+         ("week", "The Week Ahead", "--a-week"), ("back", "Tip and Sources", "--a-back")]
+# Section openers, as in issue No. 1 (15 Oct 2026): big name, "Section N", italic tagline.
+# Added automatically when a part has none, so the layout cannot drift again.
+OPENERS = {"world": ("The World", "The lead story, then the smaller ones you should still know"),
+           "france": ("France", "Politics in Paris: the budget, the street and the race for 2027"),
+           "local": ("Local", "Annecy, Haute-Savoie and the weather where you ride"),
+           "markets": ("Markets", "Yesterday's close, the story behind it, and your portfolio"),
+           "crypto": ("Crypto", "Coins, stablecoins, CBDCs and the rules around them"),
+           "tech": ("Tech and AI", "Models, chips and the patch you need tonight"),
+           "craft": ("The Craft", "3D, rigging, software, games and your next job"),
+           "sport": ("Sport", "Formula 1 · Tennis · Les Bleus"),
+           "screen": ("Screen", "Films, series, scores and tonight's pick"),
+           "sunday": ("The Sunday Read", "Long reads for a slow morning"),
+           "week": ("The Week Ahead", "Your calendar, our opinion and a harder puzzle"),
+           "back": ("Back Page", "A tip for tonight, and where today's facts came from")}
 if edition != "sunday":
     ORDER = [o for o in ORDER if o[0] != "sunday"]
 
@@ -85,6 +99,33 @@ class TopLevel(HTMLParser):
             self.ends.append(self.off() + len(tag) + 3)
 
 
+BREAK = re.compile(r'\s*<(?:div|figure|ol|p)\b[^>]*class="([^"]*)"')
+
+
+def sudoku_break(t, rnd):
+    """A block break BETWEEN stories, never inside the lead story (issue No. 1 put puzzles after a story or at the end).
+    Valid: just before a .brief, .head or .box that comes after the section's first story is over."""
+    ends = TopLevel(t).ends
+    nxt = [(e, (BREAK.match(t, e) or [None, ""])[1]) for e in ends]
+    seen_story, cands = False, []
+    for i, (e, cls) in enumerate(nxt):
+        c = cls.split()
+        starts_story = any(x in c for x in ("brief", "head", "box", "pick", "mylist"))
+        if starts_story and seen_story and i >= 3:
+            cands.append(e)
+        if i >= 1:
+            seen_story = True
+    if not cands:
+        return ends[-1] if ends else len(t)
+    return rnd.choice(cands[len(cands) // 3:] or cands)
+
+
+def opener(key, no_):
+    name, tag = OPENERS[key]
+    return (f'<div class="blk kn"><div class="opener"><span class="n">{no_}</span><h2>{_h.escape(name)}</h2></div>'
+            f'<p class="tagline">{_h.escape(tag)}</p></div>\n')
+
+
 out, used_sections, missing = [], [], []
 sudoku_n = len([x for x in (meta.get("sudoku") or ("Easy:38,Medium:32,Hard:26,Hard:24" if edition == "sunday" else "Medium:32,Hard:25")).split(",") if x])
 bodies = {}
@@ -105,6 +146,12 @@ for key, title, accent in ORDER:
         t = t.replace("<!--TIP-->", rd("tip.html") or "")
     bodies[key] = (title, accent, t)
 
+# section openers (number = position in the paper; front has the masthead instead)
+for pos, key in enumerate(bodies, start=1):
+    if key in OPENERS and 'class="opener"' not in bodies[key][2]:
+        title, accent, t = bodies[key]
+        bodies[key] = (title, accent, opener(key, pos) + t.lstrip())
+
 # sudoku: honour markers already present, add the missing ones in random distinct sections at block breaks
 present = {int(m) for b in bodies.values() for m in re.findall(r'data-sudoku="(\d+)"', b[2])}
 rnd = random.Random(int(re.sub(r"\D", "", iid)[:8]))
@@ -115,10 +162,7 @@ for n in range(sudoku_n):
     k = rnd.choice(pool)
     pool.remove(k)
     title, accent, t = bodies[k]
-    ends = TopLevel(t).ends
-    if len(ends) < 3:
-        continue
-    at = ends[rnd.randint(1, len(ends) - 2)]
+    at = sudoku_break(t, rnd)
     bodies[k] = (title, accent, t[:at] + f'\n<div class="sdk blk" data-sudoku="{n}"></div>' + t[at:])
 
 for key, (title, accent, t) in bodies.items():

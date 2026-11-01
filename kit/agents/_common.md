@@ -104,6 +104,8 @@ lead has one. Never use a photo of a different event as if it showed today's new
 
 ## Building blocks
 
+Layout reference: `kit/agents/house_style.md` (issue No. 1). Do not write section openers (assemble adds them); lead story order is head, photo, In brief, drop paragraph, more paragraphs with a pull quote; at least one pull quote per section lead when a good quote exists.
+
 Every top-level child of a section needs class `blk` (one swipeable unit; the paginator never
 splits a block). Add `kn` to headings so they stay with the next block. Available pieces:
 

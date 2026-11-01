@@ -35,6 +35,12 @@ for sec in soup.find_all("section"):
         notes.append(f"{k}: {len(nh)} head(s) without 'more' (fine for portfolio, editorial and lists; check real stories): " + "; ".join(nh[:4]))
     if sec.find("template", class_="more") is None and k not in ("front", "back", "week"):
         notes.append(f"{k}: no tap-for-more templates at all")
+for el in soup.find_all(attrs={"data-checked": True}):
+    try:
+        if any(re.search(r"https?://", v.get("note", "")) for v in json.loads(_h.unescape(el["data-checked"]))):
+            block.append("checked.json notes contain raw URLs (they overflow the phone screen): name the outlet only")
+    except Exception:
+        pass
 for a in ("pick", "checked"):
     for el in soup.find_all(attrs={"data-" + a: True}):
         try:
@@ -45,6 +51,35 @@ need = {"[data-feedback]": "feedback box", "[data-sudoku]": "sudoku", "[data-wx]
 for sel, name in need.items():
     if not soup.select(sel):
         block.append("missing " + name)
+# layout: the house style of issue No. 1 (15 Oct 2026); these drifted away by the end of October
+mast = soup.select_one("section[data-key=front] .mast")
+order = [c.get("class", [""])[0] for c in mast.find_all(recursive=False)] if mast else []
+if order != ["meta", "name", "motto", "rail"]:
+    block.append(f"masthead must be .meta (3 spans: edition and No., Amsterdam · Annecy, date), .name, .motto, .rail (section names); found {order}")
+elif len(mast.select(".meta > span")) != 3:
+    block.append("masthead .meta needs 3 spans: 'Daily · No. N', 'Amsterdam · Annecy', 'Sun 1 Nov 2026'")
+for t in soup.select("section[data-key=front] .teaser"):
+    if not "".join(x for x in t.find_all(string=True, recursive=False)).strip():
+        block.append("front teaser without its one-line dek (text after the .t headline): " + t.get_text(" ")[:40])
+for sec in soup.find_all("section"):
+    k = sec.get("data-key")
+    kids = [c for c in sec.find_all(recursive=False) if c.name and c.name not in ("template", "script")]
+    if k not in ("front",) and not sec.select_one(".opener"):
+        block.append(f"{k}: no section opener (big name, 'Section N', tagline); kit/assemble.py adds it, re-run it")
+    for i, c in enumerate(kids):
+        if "sdk" in (c.get("class") or []) and i <= 3:
+            block.append(f"{k}: sudoku sits inside the lead story (block {i}); puzzles go between stories")
+for d in soup.select(".tl .d"):
+    txt = d.get_text(" ").strip()
+    if not txt or len(txt) > 9:
+        block.append(f"week timeline date label must be short like 'Sun 1' or '12 Nov' (found {txt!r}); put times in the text")
+        break
+if soup.select_one("section[data-key=week] ol.tl") is None:
+    block.append("week: missing the ol.tl timeline")
+if not soup.select(".pull"):
+    notes.append("no pull quote anywhere (issue No. 1 had 2 or more)")
+if not soup.select_one(".sources"):
+    notes.append("back: no .sources box (issue No. 1 style: div.sources.blk with a kicker and one <p><b>Section:</b> links</p> per section)")
 if not soup.find("a", href="./?archive"):
     block.append("missing the 'Past issues' link to ./?archive")
 if not soup.find("script", class_="claims-out"):
