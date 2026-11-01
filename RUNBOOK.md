@@ -22,8 +22,7 @@ explanations anywhere in the paper.
 
 | Edition | When | Id | Covers | Size | Sudoku |
 |---|---|---|---|---|---|
-| Daily | Mon to Sat, starts about 03:00, done before 07:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
-| Sunday | Sunday, starts 03:30 Amsterdam (safety net 06:44) | `YYYY-MM-DD` (the morning's date), built with `--edition daily` | SATURDAY's news plus overnight events, exactly like a daily, plus the Sunday magazine section (below) | 13 pages: the daily's 12 plus **sunday** | 4: `Easy:38,Medium:32,Hard:26,Hard:24` |
+| Daily | Every day (Mon to Sun), starts about 03:00, done before 07:00 Amsterdam | `YYYY-MM-DD` (the morning's date) | YESTERDAY's news (previous calendar day) plus major overnight events; markets at yesterday's close | 10 section pages (scroll inside each) | 2: `Medium:32,Hard:25` |
 
 **Timing.** There is no 04:00 deadline. The daily run starts around 03:00 and the whole issue must
 be published before 07:00. Order of work: build and publish the core paper first (all 12 sections,
@@ -32,16 +31,12 @@ publish again. It is fine if that second pass finishes later, as long as everyth
 before 07:00.
 
 **Run discipline (added after 17 Oct 2026, when the issue went out four hours late: nine research agents with no search cap burned the session's usage limit and the shared budget of 200 web searches before a page was written).**
-1. **Safety net:** a separate scheduled task, "Paul Times safety net", runs Mon to Sat at 05:14 Amsterdam in a fresh session. If today's id is not in docs/issues.json on origin/main, it builds and pushes a quick but complete paper (fast research, about 60 minutes) and notifies Paul. Do not rely on it: publish early (rule 3).
-2. **At most 4 research agents at a time, on a cheaper model** (Paul's decision, 28 Oct 2026, to cap usage): launch every research agent with the Agent tool's `model: "sonnet"` (if Sonnet is unavailable, `haiku`). The editor (front ranking, front, week, back, final checks) stays on the session's own model. Each agent is capped at 25 web searches and **12 full-page WebFetch reads**, each writing its section file as it goes (briefs in `kit/agents/`). Read connectors (eToro, both Sheets) yourself, not in an agent. Agent split: A world, France, local; B markets, crypto, tech; C craft and the rigging tip; D sport and screen. Sundays add agent E (the Sunday Read) when one of A to D has finished.
+1. **Safety net:** a separate scheduled task, "Paul Times safety net", runs every day at 05:14 Amsterdam in a fresh session. If today's id is not in docs/issues.json on origin/main, it builds and pushes a quick but complete paper (fast research, about 60 minutes) and notifies Paul. Do not rely on it: publish early (rule 3).
+2. **At most 4 research agents at a time, on a cheaper model** (Paul's decision, 28 Oct 2026, to cap usage): launch every research agent with the Agent tool's `model: "sonnet"` (if Sonnet is unavailable, `haiku`). The editor (front ranking, front, week, back, final checks) stays on the session's own model. Each agent is capped at 25 web searches and **12 full-page WebFetch reads**, each writing its section file as it goes (briefs in `kit/agents/`). Read connectors (eToro, both Sheets) yourself, not in an agent. Agent split: A world, France, local; B markets, crypto, tech; C craft and the rigging tip; D sport and screen.
 3. **Publish early.** By 04:30 at the latest run `kit/ship.py <id> --force` with whatever parts exist (missing parts become "more later today"). A thin section beats no paper. Then deepen, and ship again as often as needed.
 4. If a usage or rate limit error appears, do not start new agents: immediately ship what you have.
 
-**Sunday (since 18 Oct 2026, Paul's decision).** There is no recap weekly any more: Paul does not want
-a summary of the dailies he already read. Sunday is a normal daily about Saturday, with every
-section, rule and the front-page ranking below, plus one extra section, **sunday** ("The Sunday
-Read", `data-accent="--a-week"`, placed after Screen and before The Week Ahead). It holds NEW
-long-form material only, never a recap of earlier issues. The Sunday Read is written by agent E (`kit/agents/e_sunday.md`). Opener numbers then run World 2 ... Screen 10, Sunday Read 11, Week 12, Back 13. No charts and no `charts.json`, ever. Masthead edition label "Sunday". 4 sudokus (`Easy:38,Medium:32,Hard:26,Hard:24`, the default for `--edition sunday`). `taps.txt` prints SUDOKUS SOLVED (his all-time count by difficulty; the app shows it under each puzzle): the Sunday issue mentions the week's progress in one line next to the sudokus.
+**No Sunday edition (since 1 Nov 2026, Paul's decision).** Sunday is an ordinary daily, built exactly like Monday to Saturday (covers Saturday, `--edition daily`, 12 pages, 2 sudokus). There is no Sunday Read and no agent E; `kit/agents/e_sunday.md` is retired.
 
 **Front page: rank before you write (Paul's rule, 18 Oct 2026).** The 18 Oct issue led on Hormuz while
 rioters burned the Limoges town hall on Saturday evening, the biggest French story of the day; Paul
@@ -75,21 +70,21 @@ word of `parts/front.html`:
 
 ## Run order (the daily routine; every step is one or two tool calls)
 
-Set once: `export TPT_PASSWORD=<code from your task instructions>` (never print it or commit it). `<id>` is the morning's date; Sunday uses `--edition sunday` everywhere.
+Set once: `export TPT_PASSWORD=<code from your task instructions>` (never print it or commit it). `<id>` is the morning's date;
 
 1. **Prep (1 call).** `pip install --break-system-packages -q cryptography pillow beautifulsoup4` if missing. Read the first sheet of the Google Sheet "Paul Times taps" (id and range in `kit/form.json`) with the Sheets connector, save the result as `/tmp/taps.json`, then `python kit/prep.py <id> /tmp/taps.json`. It writes `issues/<id>/history.txt` (do-not-repeat digest and the claims that fall due today), `skeleton.txt` (structure of the previous issue: **do not unlock and read the previous issue's source any more**), `taps.txt` (Paul's SEEN / MY LIST / NOT FOR ME, his feedback flags and notes, language, sudoku progress) and `screen-state.json`. If a digest section says "none found" for a feature that runs daily, say so in the final report (the matcher needs a fix). If the Sheet cannot be read, skip `taps.json` and say so.
 2. **Portfolio (editor, not an agent).** eToro `get-my-portfolio-summary` (read only, never trade): total value, open P&L, copied traders with value, open P&L and share, direct holdings. Revolut ETFs: Google Sheet `ETF_Investment_Plan` (id `16xAAN9Urk_NPYZezI_LdFnqFYpn7DZ8c5v3wSRznOHE`), range `Holdings!B7:O20`: ETF, value in euro, unrealised %, weight, target. Write both as plain text to `issues/<id>/portfolio.txt`. If a connector is unavailable write "unavailable: <source>" there. He rebalances only by adding money (no selling).
-3. **Research agents (up to 4 at once, `model: "sonnet"`).** Prompt each with: "Read kit/agents/_common.md and kit/agents/<brief>.md. Issue id <id>, edition <daily|sunday>, today is <date>, the paper covers <the previous calendar day> plus major overnight events. Max 25 searches and 12 WebFetch page reads. Read issues/<id>/history.txt and taps.txt if your brief mentions them. Write your files to issues/<id>/parts/." Briefs: `a_world_france_local`, `b_markets_crypto_tech`, `c_craft`, `d_sport_screen`, Sundays `e_sunday`. Do not paste the long rules into the prompt: they are in the files.
+3. **Research agents (up to 4 at once, `model: "sonnet"`).** Prompt each with: "Read kit/agents/_common.md and kit/agents/<brief>.md. Issue id <id>, edition daily, today is <date>, the paper covers <the previous calendar day> plus major overnight events. Max 25 searches and 12 WebFetch page reads. Read issues/<id>/history.txt and taps.txt if your brief mentions them. Write your files to issues/<id>/parts/." Briefs: `a_world_france_local`, `b_markets_crypto_tech`, `c_craft`, `d_sport_screen`. Do not paste the long rules into the prompt: they are in the files.
 4. **Last-night sweep and ranking** (below), then write `parts/front.html`, `parts/week.html`, `parts/back.html` yourself, plus `parts/meta.json` (`{"title": "<short lead headline>"}`; add `"sudoku"` only to override the edition default), `parts/claims.json` and `parts/checked.json` (see Accountability). Use `issues/<id>/skeleton.txt` and `kit/agents/_common.md` (building blocks) for markup. Placeholders `{{NO}} {{DATE}} {{WEEKDAY}} {{EDITION}}` are filled in for you. Older issues contain charts; new ones must not: Paul's rule is never to draw graphs, charts, maps or schematics, only real photos, with numbers in tables, strips and text.
-5. **Ship (1 call).** `python kit/ship.py <id>` (add `--edition sunday` on Sundays): assembles `sections.html` from the parts (wrapper, sudoku placement, pick box and escaping, verdict box, claims script, placeholders), lints it (every brief and big story has its `more` template, JSON valid, dead image and Apply links dropped, dashes fixed, back-page pieces present, parallel URL checks), builds, commits and pushes. It refuses to commit plain-text files. Lint problems that block shipping are listed: fix the part file and run it again. For the early push use `--force`.
-6. **Deepen and re-ship.** Let agents finish or add depth, ship again. Optional last check: `python kit/preview_check.py <id> 12` (Sunday 13).
+5. **Ship (1 call).** `python kit/ship.py <id>`: assembles `sections.html` from the parts (wrapper, sudoku placement, pick box and escaping, verdict box, claims script, placeholders), lints it (every brief and big story has its `more` template, JSON valid, dead image and Apply links dropped, dashes fixed, back-page pieces present, parallel URL checks), builds, commits and pushes. It refuses to commit plain-text files. Lint problems that block shipping are listed: fix the part file and run it again. For the early push use `--force`.
+6. **Deepen and re-ship.** Let agents finish or add depth, ship again. Optional last check: `python kit/preview_check.py <id> 12`.
 7. Wait about 90 seconds, confirm `<site URL from README.md>/issues.json` lists the new id. Report in one short message: the headline, what failed, the lint report's counts (photos, urls dropped), what could not be read and which fallback was used.
 
 Plain `issues/*/sections.html`, `parts/` and the `.txt` files are gitignored on purpose: the repo is public and they hold Paul's portfolio and taps. The build writes the encrypted `sections.enc` and `docs/issues/<id>.enc`, and those are what get committed. Never force-add plain files, never commit `build/` or the password.
 
 ## Sections
 
-You write `front`, `week` and `back`; the agents write the rest (their briefs hold the section rules). Section order: front, world, france, local, markets, crypto, tech, craft, sport, screen, [sunday], week, back. The big number in each section opener is its position (World 2 ... Screen 10, Week 11, Back Page 12; Sunday: Sunday Read 11, Week 12, Back 13).
+You write `front`, `week` and `back`; the agents write the rest (their briefs hold the section rules). Section order: front, world, france, local, markets, crypto, tech, craft, sport, screen, week, back. The big number in each section opener is its position (World 2 ... Screen 10, Week 11, Back Page 12;)
 
 1. **front** (`--a-front`): masthead (date, edition, issue number = previous + 1; tagline exactly
    "Your daily paper, from the first coffee to the last parcel", replacing the old "All the news a
@@ -158,4 +153,4 @@ like "jeudi 15 octobre". The app's buttons switch language by themselves. For `f
 
 - No Dutch news (Netherlands politics or national news). Amsterdam only for weather.
 - Rank every issue's candidate stories before choosing the front lead (18 Oct 2026).
-- No recap editions: Sunday is a daily about Saturday plus the Sunday Read (18 Oct 2026).
+- No Sunday edition: the daily runs all 7 days; Sunday is a normal daily about Saturday (1 Nov 2026).
