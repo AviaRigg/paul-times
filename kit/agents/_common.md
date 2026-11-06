@@ -34,6 +34,7 @@ until the request times out and the agent loses the item. Rules, for you and for
    names them, and cite the article you actually read.
    - French politics instead of franceinfo: Public Sénat, LCP, Le Monde, Les Echos, 20 Minutes,
      Ouest-France, Le Figaro, Le Parisien, BFMTV, Brut (via search).
+   - Annecy, tested 6 Nov 2026 and readable with WebFetch: odsradio.com article pages (search "odsradio Annecy <month> <year>", photos at odsradio.com/media/news/...), the odsradio.com home page (lists the day's local stories with links), the faitsdivers365.fr Haute-Savoie listing page (every Dauphiné and Messager headline of the last days with links; article pages there are ledes only, no photo), annecy-actualite.fr. Local needs at least 5 real items: lead with photo, briefs, plus a "This weekend around Annecy" box.
    - Annecy and Haute-Savoie instead of Le Dauphiné and Le Messager: ODS Radio (odsradio.com, which
      has photos), faitsdivers365.fr (aggregator of Dauphiné and Messager headlines), actu.fr,
      8 Mont-Blanc, Radio Mont-Blanc, annecy.fr and grand-annecy.fr, Haute-Savoie prefecture. Search
