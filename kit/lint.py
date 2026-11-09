@@ -25,6 +25,12 @@ want = ["front", "world", "france", "local", "markets", "crypto", "tech", "craft
 miss = [k for k in want if k not in keys]
 if miss:
     block.append("missing sections: " + ", ".join(miss))
+# tag balance (9 Nov 2026: three stray </div> in Markets closed #src early, so the phone showed only 5 of 12 pages)
+for m in re.finditer(r'<section\b[^>]*data-key="([\w-]+)"[^>]*>(.*?)</section>', src, re.S):
+    for tag in ("div", "section", "template", "figure", "table"):
+        d = len(re.findall(rf"<{tag}\b", m.group(2))) - len(re.findall(rf"</{tag}>", m.group(2)))
+        if d:
+            block.append(f"{m.group(1)}: {abs(d)} {'unclosed' if d > 0 else 'extra closing'} <{tag}> (breaks every later page on the phone)")
 for sec in soup.find_all("section"):
     k = sec.get("data-key")
     nb = [b.find("h4").get_text(" ").strip()[:50] if b.find("h4") else "?" for b in sec.select(".brief") if not b.find("template", class_="more")]
