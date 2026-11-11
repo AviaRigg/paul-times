@@ -40,7 +40,14 @@ Every SEEN series (including ones he added himself) joins "Your shows" coverage:
    Posters (always try; they make it tempting):
    - Picks: add `"wiki": "tv|Show name"` for series (TVmaze, real portrait posters) or
      `"wiki": "en|Wikipedia_title"` for films; or `"img": "<poster URL>"` if you found one.
-   - Coming soon: a `<div class="pgrid blk">` of up to 6 `<figure class="poster" data-pwiki="en|Film_title;fr|Titre_du_film" data-t="Title"><figcaption><b>21 Oct</b>Title</figcaption></figure>`
+   - **Coming soon is a persistent list (Paul's rule, 11 Nov 2026).** A title that enters Coming soon
+     stays in every issue until its release date; it never drops out and comes back. The list lives in
+     `kit/coming-soon.json`; run `python kit/coming_soon.py <id>` to see it. `kit/assemble.py` merges
+     your posters into it and renders the WHOLE list, so you only write NEW titles and UPDATES (a new
+     trailer id, a firmer date, a poster) in your pgrid; you may leave known titles out. Give each
+     poster `data-date="YYYY-MM-DD"` (Netherlands date; `YYYY-MM` if only the month is known): it
+     decides when the title leaves the list. Check the list for missing trailer ids and fill them.
+     Markup: a `<div class="pgrid blk">` of `<figure class="poster" data-pwiki="en|Film_title;fr|Titre_du_film" data-t="Title"><figcaption><b>21 Oct</b>Title</figcaption></figure>`
      per block (several specs separated by `;` are tried in order; only portrait images count, so
      logos and title cards are skipped). Unreleased films often have no Wikipedia poster yet: then
      find the official poster in a news article or studio page (WebFetch, ask for the og:image or

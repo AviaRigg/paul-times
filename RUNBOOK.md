@@ -156,3 +156,5 @@ like "jeudi 15 octobre". The app's buttons switch language by themselves. For `f
 - Rank every issue's candidate stories before choosing the front lead (18 Oct 2026).
 - Layout follows issue No. 1 (`kit/agents/house_style.md`), not yesterday's issue (1 Nov 2026).
 - No Sunday edition: the daily runs all 7 days; Sunday is a normal daily about Saturday (1 Nov 2026).
+- No page is ever empty or thin (11 Nov 2026). Local always has real Annecy and Haute-Savoie stories; ODS Radio (odsradio.com/news/locales) is the fallback that always has them. `kit/lint.py` blocks a Local page with fewer than 5 stories, any other section with fewer than 2, and a lead that says there is no news.
+- Coming soon is persistent (11 Nov 2026): once a title is listed it stays until its release date, then leaves. `kit/coming-soon.json` holds the list, `kit/coming_soon.py` merges and renders it at assembly; agents only add new titles and updates.

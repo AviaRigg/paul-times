@@ -168,6 +168,22 @@ for sec in soup.find_all("section"):
     elif not [f for f in sec.select("figure.photo[data-src]") if f["data-src"] not in dead]:
         notes.append(f"{k}: only file photos (data-wiki); find a real news photo with data-src")
 
+# no empty pages (Paul's rule, 11 Nov 2026: Local shipped with "no verified local headline yet")
+EMPTY = re.compile(r"no verified (local )?(headline|news|story)|nothing (new )?(was )?found|more later today|still being written", re.I)
+MIN_STORIES = {"local": 5}
+for sec in soup.find_all("section"):
+    k = sec.get("data-key")
+    if k in ("front", "week", "back"):
+        continue
+    stories = [h for h in sec.select(".head h3, .head h4, .brief h4, .box h4") if not h.find_parent(attrs={"data-wx": True})]
+    need = MIN_STORIES.get(k, 2)
+    if len(stories) < need:
+        block.append(f"{k}: only {len(stories)} stories (need {need}); no page may be empty or thin. "
+                     + ("Local fallback: ODS Radio (odsradio.com/news/locales), Le Dauphiné Libéré Annecy, Le Messager, France 3 Alpes" if k == "local" else "research more"))
+    lead = sec.select_one(".head h3, .head h4, .brief h4")
+    if lead is not None and EMPTY.search(lead.get_text(" ")):
+        block.append(f"{k}: the lead headline admits there is no news ('{lead.get_text(' ', strip=True)[:60]}'); find real stories")
+
 print("BLOCKING:" if block else "no blocking problems")
 for b in block:
     print("  ! " + b)

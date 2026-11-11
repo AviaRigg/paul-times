@@ -20,7 +20,15 @@ First read `kit/agents/_common.md`. You write: `parts/world.html`, `parts/france
    latest poll. Use `<figure class="photo portrait" data-wiki="fr|David_Lisnard" data-alt="David Lisnard"></figure>`
    at the top of the box.
 4. **local** (`--a-local`): full Annecy and Haute-Savoie coverage, including the small local stories
-   (police, firefighters, council, sport, events): Paul wants them all, they are not filler. Annecy and Haute-Savoie lead with a photo of the place, the live weather box
+   (police, firefighters, council, sport, events): Paul wants them all, they are not filler.
+   **The Local page is never empty (Paul's rule, 11 Nov 2026, after a lead that said "no verified local headline yet").**
+   There is always local news. Start with ODS Radio: WebFetch `https://www.odsradio.com/news/locales`
+   (it lists 20+ Annecy, Haute-Savoie and Savoie stories a day with images; article pages give
+   og:image `https://www.odsradio.com/media/news/<slug>_<hash>.jpg`, curl 200, credit "ODS Radio").
+   Spend your FIRST page read on it, before world and France run out the budget. Then Le Dauphiné
+   Libéré (Annecy), Le Messager, L'Essor savoyard, France 3 Alpes, annecy.fr. Minimum: a lead story
+   with a photo plus 4 to 8 briefs (Annecy first, then Haute-Savoie, then Savoie). Never write a
+   lead that says there is no news; `kit/lint.py` blocks a Local page with fewer than 5 stories. Annecy and Haute-Savoie lead with a photo of the place, the live weather box
    (step 4), 3 to 4 Annecy briefs, **Dutch word of the day** (word, pronunciation,
    example sentence, bonus phrase; useful for a delivery driver).
 

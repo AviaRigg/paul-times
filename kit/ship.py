@@ -30,7 +30,7 @@ sudoku = meta.get("sudoku") or ("Easy:38,Medium:32,Hard:26,Hard:24" if ed == "su
 run(py, os.path.join(kit, "build.py"), iid, "--edition", "daily", "--title", meta.get("title", ""), "--sudoku", sudoku)
 if "--no-push" in sys.argv:
     sys.exit(0)
-run("git", "add", "docs", "issues", "kit/feedback-handled.json")
+run("git", "add", "docs", "issues", "kit/feedback-handled.json", "kit/coming-soon.json")
 staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=tptlib.ROOT, capture_output=True, text=True).stdout.split()
 bad = [f for f in staged if f.endswith("sections.html") or "/parts/" in f or f.endswith(".txt") or "portfolio" in f]
 if bad:

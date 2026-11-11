@@ -6,6 +6,8 @@ Reads issues/<id>/parts/:
   front.html world.html france.html local.html markets.html crypto.html tech.html craft.html sport.html
   screen.html [sunday.html] week.html back.html          (a part may be bare blocks or a full <section>)
   meta.json     {"title": "lead headline", "sudoku": "Medium:32,Hard:25"}   (title is optional here)
+  coming-soon.json  optional list of new Coming soon titles ({"t","label","date","attrs"}); merged with the agent's
+                pgrid posters into the persistent kit/coming-soon.json, which is rendered in full (kit/coming_soon.py)
   picks.json    list of Tonight's-pick objects, replaces <!--PICKS--> in screen.html (escaping handled here)
   checked.json  list of verdicts, replaces <!--CHECKED--> in back.html
   claims.json   list of claims, written as the claims-out script at the end
@@ -138,6 +140,8 @@ for key, title, accent in ORDER:
     for k, v in subs.items():
         t = t.replace(k, v)
     if key == "screen":
+        import coming_soon  # persistent Coming soon list (kit/coming-soon.json), see kit/coming_soon.py
+        t, n_coming = coming_soon.render_into(t, date, rj("coming-soon.json", []))
         picks = rj("picks.json", None)
         if picks is not None:
             t = t.replace("<!--PICKS-->", f"<div class=\"pick blk\" data-pick='{attr(picks)}'></div><div class=\"mylist blk\" data-mylist></div>")
