@@ -1,20 +1,5 @@
 [
  {
-  "t": "Steps",
-  "label": "20 Nov",
-  "date": "2026-11-20",
-  "attrs": {
-   "data-t": "Steps",
-   "data-yt": "FuBc4GJA-ZU",
-   "data-pwiki": "en|Steps_(film);en|Steps_(2026_film)",
-   "data-src": "https://www.whats-on-netflix.com/wp-content/uploads/2026/11/steps-movie-review.png",
-   "data-about": "Lilith, fed up with living in Cinderella's shadow, steals the Fairy Godmother's wand and crashes the royal ball with her sister Margot. The stepsisters must team up with Cinderella to survive the Screaming Woods.",
-   "data-meta": "Animation · Netflix",
-   "data-where": "Netflix, from 20 November"
-  },
-  "added": "2026-11-18"
- },
- {
   "t": "Hexed",
   "label": "25 Nov",
   "date": "2026-11-25",
@@ -34,7 +19,7 @@
   "label": "2 Dec (FR)",
   "date": "2026-12-02",
   "attrs": {
-   "data-pwiki": "fr|Astérix_et_le_Royaume_de_Nubie;en|Asterix_and_the_Kingdom_of_Nubia",
+   "data-pwiki": "fr|Astérix_et_Obélix_:_Le_Royaume_de_Nubie",
    "data-t": "Astérix - The Kingdom of Nubia",
    "data-yt": "OoObyOm2rfI",
    "data-about": "The two Gaulish heroes leave their village for Nubia, south of ancient Egypt, in a story written for the big screen rather than adapted from an existing album. French animated family adventure directed by Alexandre Heboyan.",
@@ -48,7 +33,7 @@
   "label": "2 Dec (NL)",
   "date": "2026-12-02",
   "attrs": {
-   "data-pwiki": "en|The_Cat_in_the_Hat_(2026_film);en|The_Cat_in_the_Hat_(film)",
+   "data-pwiki": "en|The_Cat_in_the_Hat_(film)",
    "data-t": "The Cat in the Hat",
    "data-yt": "Vuv0kqGWjno",
    "data-about": "Bill Hader voices the Cat, who now works for an organisation that sends him to cheer up children. His latest job is two siblings adjusting to a new town, and if his love of chaos goes too far he could lose his magic hat. Warner Bros. Pictures Animation's first feature, animated by DNEG.",
