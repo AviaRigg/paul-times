@@ -53,10 +53,11 @@ word of `parts/front.html`:
    F1, GTA 6, rigging, Australia), and how visual it is (a strong news photo exists). Highest total
    leads the front; ties go to the newer, more visual event. A running story (a war, a market
    slide) only leads if something genuinely new and big happened in it.
-3. Write the ranking as an HTML comment at the top of `parts/front.html`
+3. **Freshness and status check (Paul's rule, 27 Nov 2026,** after Tech led on "Nvidia has no chief executive" four days after Huang was reinstated, and World ran week-old briefs). Agents' searches often return stale pages. Before ranking, run `kit/assemble.py <id>` then `python kit/lint.py <id> --no-net`: it blocks stories whose newest date is more than 4 days old (Craft and Screen: 8) and prints a STATUS CHECK list (stories built on a resignation, an interim boss, a ban, an arrest, a ceasefire...). For every section lead and every STATUS CHECK item, run one search "<subject> latest" yourself and rewrite or drop anything that has been overtaken. Never ship a story whose premise you have not confirmed is still true today.
+4. Write the ranking as an HTML comment at the top of `parts/front.html`
    (`<!-- FRONT RANKING: 1. ... (18) 2. ... -->`, it stays inside the encrypted file) and use #1 for
    the lead and #2 and #3 for the two teasers.
-4. When a big story breaks after the first push, re-rank and republish.
+5. When a big story breaks after the first push, re-rank and republish.
 
 **Images are mandatory (Paul's rule, 31 Oct 2026, after the front shipped with an invisible image).**
 1. **Front lead:** always a real news photo with `data-src` (plus `data-credit`, `data-link`), taken from a news article about
@@ -158,4 +159,5 @@ like "jeudi 15 octobre". The app's buttons switch language by themselves. For `f
 - No Sunday edition: the daily runs all 7 days; Sunday is a normal daily about Saturday (1 Nov 2026).
 - No page is ever empty or thin (11 Nov 2026). Local always has real Annecy and Haute-Savoie stories; ODS Radio (odsradio.com/news/locales) is the fallback that always has them. `kit/lint.py` blocks a Local page with fewer than 5 stories, any other section with fewer than 2, and a lead that says there is no news.
 - ETF figures come from the Google Sheet `Paul Money v2`, never the old `ETF_Investment_Plan` (27 Nov 2026).
+- Only fresh news (27 Nov 2026): every story is about yesterday or overnight, or a new development; each section lead and status story is re-checked with a "latest" search before shipping. Lint blocks stale stories.
 - Coming soon is persistent (11 Nov 2026): once a title is listed it stays until its release date, then leaves. `kit/coming-soon.json` holds the list, `kit/coming_soon.py` merges and renders it at assembly; agents only add new titles and updates.

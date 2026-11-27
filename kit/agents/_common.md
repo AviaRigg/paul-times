@@ -12,6 +12,8 @@ counts (briefs, photos, `more` templates), sources you could not read, anything 
 
 ## Research rules
 
+**Freshness rule (Paul, 27 Nov 2026).** The 27 Nov issue led Tech on "Nvidia has no chief executive", a 12 Nov story, four days after Huang had been reinstated, and World ran a page of week-old briefs. So: (1) every story must be about something that happened yesterday or overnight, or carry a genuinely new development from that window; older background goes inside the `more` template, never as the story itself. (2) Before you write ANY story, run one search for "<subject> latest" (or "<subject> news <yesterday's date>") and read the newest result, so a reversal, reinstatement, result or resolution is never missed. Search results are often weeks old; the date on the page is what counts. (3) Write the event date into the copy ("on Thursday 26 November"). `kit/lint.py` blocks any story whose newest date is more than 4 days old (Craft and Screen: 8) and lists status stories (resigned, interim, banned, missing, ceasefire...) for the editor to re-check.
+
 Research your sections with web search. Search for each section separately; prefer original sources. Verify numbers against a second source when they disagree; if they still disagree, say so in the copy ("snapshot, treat as approximate"). Never invent a figure.
 
 No `charts.json`, no drawn visuals. Paul's rule: never draw graphs, charts, maps or schematics. Visuals are real photos only (see Photos). Numbers go in tables, strips and text.

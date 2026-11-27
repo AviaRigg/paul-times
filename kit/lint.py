@@ -184,6 +184,66 @@ for sec in soup.find_all("section"):
     if lead is not None and EMPTY.search(lead.get_text(" ")):
         block.append(f"{k}: the lead headline admits there is no news ('{lead.get_text(' ', strip=True)[:60]}'); find real stories")
 
+# freshness (Paul's rule, 27 Nov 2026: Tech led on "Nvidia has no chief executive", a 12 Nov story, four days after
+# Huang was reinstated on 23 Nov; World ran a page of week-old briefs). A news story whose NEWEST date is more than
+# 4 days (Craft and Screen: 8) before the issue is stale; a bare weekday counts as this week: drop it, or search "<subject> latest" and rewrite it around what happened since.
+import datetime as _dt
+_MON = {m: i for i, m in enumerate(["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
+_DATE = re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)? (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b", re.I)
+_issue = _dt.date.fromisoformat(iid[:10])
+_WD = re.compile(r"\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|today|tonight|yesterday|overnight)\b(?!,? \d{1,2} (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))", re.I)
+_LIMIT = {"craft": 8, "screen": 8}  # slower beats; every other news section: 4 days
+def _newest(text):
+    best = _issue if _WD.search(text) else None  # a bare weekday in a daily means this week
+    for d, m in _DATE.findall(text):
+        try:
+            x = _dt.date(_issue.year, _MON[m[:3].lower()], int(d))
+        except ValueError:
+            continue
+        if (x - _issue).days > 180:
+            x = x.replace(year=x.year - 1)
+        elif (_issue - x).days > 180:
+            x = x.replace(year=x.year + 1)
+        best = x if best is None or x > best else best
+    return best
+for sec in soup.find_all("section"):
+    k = sec.get("data-key")
+    if k in ("front", "week", "back"):
+        continue
+    for st in sec.select(".head, .brief"):
+        h = st.find(["h3", "h4"])
+        if h is None:
+            continue
+        body = st if "brief" in st.get("class", []) else st
+        text = body.get_text(" ")
+        if "head" in st.get("class", []):  # a lead's facts sit in the following in-brief box and paragraphs
+            sib = st.find_next_sibling(class_="inbrief")
+            if sib is not None:
+                text += " " + sib.get_text(" ")
+        n = _newest(text)
+        if n is not None and (_issue - n).days > _LIMIT.get(k, 4):
+            block.append(f"{k}: stale story, newest date is {n:%d %b} ('{h.get_text(' ', strip=True)[:60]}'). "
+                         "Search '<subject> latest' for anything newer (a reversal, a reinstatement, a result) and rewrite it, or drop it")
+
+# status stories go out of date without changing their dates (27 Nov 2026: "Nvidia has no chief executive" ran with a
+# fresh share price four days after Huang was reinstated). The editor re-checks each one with a "<subject> latest" search.
+_STATUS = re.compile(r"\b(interim|acting (?:chief|ceo|president|head)|has no (?:chief|ceo|leader|coach|manager)|resign\w*|ousted|fired|sacked|steps? down|stepped down|suspended|banned|missing|detained|arrested|hospitali[sz]ed|ceasefire|deal (?:collapses|is off))\b", re.I)
+_st = []
+for sec in soup.find_all("section"):
+    k = sec.get("data-key")
+    if k in ("front", "week", "back"):
+        continue
+    for st in sec.select(".head, .brief"):
+        h = st.find(["h3", "h4"])
+        if h is None:
+            continue
+        ib = st.find_next_sibling(class_="inbrief") if "head" in st.get("class", []) else None
+        lead_txt = h.get_text(" ") + " " + (ib.get_text(" ") if ib is not None else st.get_text(" ")[:400])
+        if _STATUS.search(lead_txt):
+            _st.append(f"{k}: '{h.get_text(' ', strip=True)[:60]}'")
+if _st:
+    notes.append("STATUS CHECK (editor, before the final ship): search '<subject> latest' for each and confirm it was not reversed: " + "; ".join(_st))
+
 print("BLOCKING:" if block else "no blocking problems")
 for b in block:
     print("  ! " + b)
