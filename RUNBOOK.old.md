@@ -95,8 +95,8 @@ Never two in the same section.
 3. Portfolio data (Markets section, "Your portfolio"):
    - eToro: `get-my-portfolio-summary` (read only, never trade). Total value, open P&L, copied
      traders with value, open P&L and share, direct holdings.
-   - Revolut ETFs: Google Sheet `ETF_Investment_Plan`
-     (id `16xAAN9Urk_NPYZezI_LdFnqFYpn7DZ8c5v3wSRznOHE`), range `Holdings!B7:O20`:
+   - Revolut ETFs: Google Sheet `Paul Money v2` (NOT the old `ETF_Investment_Plan`, stale since 28 Oct 2026)
+     (id `1AehGqIdhQOEv78aBPIrYl8vOaH0cLwzIM0rfCilfH8M`), range `Portfolio!B5:W40`:
      ETF, value €, unrealised %, weight, target.
    - If a connector is unavailable, keep yesterday's structure and print "Not updated today:
      <source> unavailable" in the box. Never guess holdings.
